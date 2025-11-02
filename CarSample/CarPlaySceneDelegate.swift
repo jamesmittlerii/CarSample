@@ -11,6 +11,59 @@ import UIKit
 import CarPlay
 import os.log
 
+func drawGaugeImage(for value: Double, size: CGSize = CGSize(width: 40, height: 40)) -> UIImage {
+    // Clamp value to 0...20, then normalize to 0...1
+    let clamped = max(0.0, min(20.0, value))
+    let progress = CGFloat(clamped / 20.0)
+
+    let format = UIGraphicsImageRendererFormat.default()
+    format.opaque = false
+    let renderer = UIGraphicsImageRenderer(size: size, format: format)
+
+    return renderer.image { ctx in
+        let rect = CGRect(origin: .zero, size: size)
+        let center = CGPoint(x: rect.midX, y: rect.midY)
+
+        // Make it a ring that fits within the smallest dimension
+        let lineWidth: CGFloat = max(2, min(size.width, size.height) * 0.15)
+        let radius = (min(size.width, size.height) - lineWidth) / 2.0
+
+        // Angles (start at top, clockwise)
+        let startAngle: CGFloat = -.pi / 2
+        let endAngle: CGFloat = startAngle + 2 * .pi
+
+        // Background track
+        let trackPath = UIBezierPath(arcCenter: center,
+                                     radius: radius,
+                                     startAngle: startAngle,
+                                     endAngle: endAngle,
+                                     clockwise: true)
+        trackPath.lineWidth = lineWidth
+        UIColor.systemGray3.setStroke()
+        trackPath.stroke()
+
+        // Progress arc
+        let progressEnd = startAngle + (endAngle - startAngle) * progress
+        let progressPath = UIBezierPath(arcCenter: center,
+                                        radius: radius,
+                                        startAngle: startAngle,
+                                        endAngle: progressEnd,
+                                        clockwise: true)
+        progressPath.lineCapStyle = .round
+        progressPath.lineWidth = lineWidth
+        UIColor.systemBlue.setStroke()
+        progressPath.stroke()
+
+        // Optional: thin outer border for clarity
+        let outerBorder = UIBezierPath(ovalIn: rect.insetBy(dx: 0.5, dy: 0.5))
+        outerBorder.lineWidth = 1
+        UIColor.systemGray4.setStroke()
+        outerBorder.stroke()
+    }
+}
+
+
+
 class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate {
     var interfaceController: CPInterfaceController?
     let logger = Logger()
@@ -67,8 +120,14 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate {
     func listTemplate() -> CPListTemplate {
         // Build CPListItems from current albums and keep references
         listItems = albums.map { album in
-            let item = CPListItem(text: album.title,
-                                  detailText: "\(album.artist) • $\(String(format: "%.2f", album.price))")
+            
+            let dynamicImage = drawGaugeImage(for: album.price)
+            
+            let item = CPListItem(
+                text: album.title,
+                detailText: "\(album.artist) • $\(String(format: "%.2f", album.price))",
+                image: dynamicImage
+            )
             // Set playbackProgress as price percentage of $20 (clamped 0...1)
             let progress = min(1.0, max(0.0, album.price / 20.0))
             item.playbackProgress = CGFloat(progress)
@@ -114,8 +173,12 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate {
         
         // Rebuild CPListItems to reflect new prices (CPListItem text is read-only)
         listItems = albums.map { album in
-            let item = CPListItem(text: album.title,
-                                  detailText: "\(album.artist) • $\(String(format: "%.2f", album.price))")
+            let dynamicImage = drawGaugeImage(for: album.price)
+            let item = CPListItem(
+                text: album.title,
+                detailText: "\(album.artist) • $\(String(format: "%.2f", album.price))",
+                image: dynamicImage
+            )
             // Update playbackProgress to match the latest price
             let progress = min(1.0, max(0.0, album.price / 20.0))
             item.playbackProgress = CGFloat(progress)
