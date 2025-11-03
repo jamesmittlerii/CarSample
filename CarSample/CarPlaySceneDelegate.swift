@@ -114,19 +114,21 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate {
                                             completion: nil)
         
         
-        // Start OBD-II connection asynchronously
-        Task { [weak self] in
-            guard let self else { return }
-            do {
-                let obd2Info = try await obdService.startConnection()
-                // Optionally log or use obd2Info here (e.g., VIN or protocol)
-                self.logger.info("OBD-II connected successfully.")
-                _ = obd2Info // prevent unused variable warning if not used yet
+        // Start OBD-II connection asynchronously if enabled
+        if ConfigData.shared.autoConnectToOBD {
+            Task { [weak self] in
+                guard let self else { return }
+                do {
+                    let obd2Info = try await obdService.startConnection()
+                    // Optionally log or use obd2Info here (e.g., VIN or protocol)
+                    self.logger.info("OBD-II connected successfully.")
+                    _ = obd2Info // prevent unused variable warning if not used yet
 
-                // After a successful connection, start continuous sensor updates
-                self.startContinuousOBDUpdates()
-            } catch {
-                self.logger.error("OBD-II connection failed: \(error.localizedDescription)")
+                    // After a successful connection, start continuous sensor updates
+                    self.startContinuousOBDUpdates()
+                } catch {
+                    self.logger.error("OBD-II connection failed: \(error.localizedDescription)")
+                }
             }
         }
     }

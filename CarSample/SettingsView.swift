@@ -22,6 +22,10 @@ struct SettingsView: View {
     var body: some View {
         NavigationView {
             Form {
+                Section(header: Text("Connection")) {
+                    Toggle("Automatically Connect", isOn: $configData.autoConnectToOBD)
+                }
+
                 Section(header: Text("Wi-Fi Connection Details")) {
                     HStack {
                         Text("Host")
