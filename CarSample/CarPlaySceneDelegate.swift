@@ -156,7 +156,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate {
             let button = CPGridButton(titleVariants: [album.title],
                                       image: dynamicImage) { [weak self] _ in
                 guard let self else { return }
-                self.presentContactTemplate2(for: album)
+                self.presentInformationTemplate(for: album)
             }
             return button
         }
@@ -166,78 +166,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate {
         return template
     }
     
-    @MainActor
-    private func presentContactTemplate2(for album: Album)  {
-        // 1. Create a CPContact object
-                let contact = CPContact(
-                    name: album.title,
-                    image: drawGaugeImage(for: album.price) // Use a system image or your own
-                )
-                contact.subtitle = album.artist
-                contact.informativeText = "Some additional details about the contact."
-        
-        let albumDetails = [
-               "Price": String(format: "$%.2f", album.price),
-               "Year": "\(album.year)",
-               "Genre": album.genre,
-               "Length": "\(album.lengthInMinutes) min"
-           ]
-           
-           // You can represent these details as `CPAction` buttons in the contact’s actions array
-           let detailActions = albumDetails.map { key, value in
-               CPTextButton(title: "\(key): \(value)", textStyle: .normal) { _ in
-                   // These are read-only buttons — no-op or show a message
-               }
-           }
-
-                // 2. Add actions (e.g., call, message, directions)
-                let callButton = CPContactCallButton(
-                    handler: { button in
-                        // Handle the call action (e.g., use tel:// URL scheme or VoIP)
-                        print("Call button tapped for \(contact.name)")
-                    }
-                )
-            
-                contact.actions = [callButton] // CPContact can display up to 4 actions
-
-                // 3. Create the CPContactTemplate using the contact object
-                let contactTemplate = CPContactTemplate(contact: contact)
-        // Present the template
-        interfaceController?.pushTemplate(contactTemplate, animated: true, completion: nil)
-    }
-    
-    @MainActor
-    private func presentContactTemplate(for album: Album) {
-        // Create a CPContact to represent the album
-        let contact = CPContact()
-        contact.name = album.title
-        contact.subtitle = album.artist
-        
-        contact.image = drawGaugeImage(for: album.price)
-      
-        // Define additional labeled information
-        let albumDetails = [
-            "Price": String(format: "$%.2f", album.price),
-            "Year": "\(album.year)",
-            "Genre": album.genre,
-            "Length": "\(album.lengthInMinutes) min"
-        ]
-        
-        // You can represent these details as `CPAction` buttons in the contact’s actions array
-        _ = albumDetails.map { key, value in
-            CPTextButton(title: "\(key): \(value)", textStyle: .normal) { _ in
-                // These are read-only buttons — no-op or show a message
-            }
-        }
-        
-       
-        
-        // Create the contact template
-        let template = CPContactTemplate(contact: contact)
-        
-        // Present the template
-        interfaceController?.pushTemplate(template, animated: true, completion: nil)
-    }
+   
     
     @MainActor
     private func presentInformationTemplate(for album: Album) {
@@ -314,7 +243,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate {
             let button = CPGridButton(titleVariants: [album.title],
                                       image: dynamicImage) { [weak self] _ in
                 guard let self else { return }
-                self.presentContactTemplate2(for: album)
+                self.presentInformationTemplate(for: album)
             }
             return button
         }
@@ -353,7 +282,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate {
                 return
             }
             let tappedAlbum = self.albums[index]
-            self.presentContactTemplate2(for: tappedAlbum)
+            self.presentInformationTemplate(for: tappedAlbum)
             completion()
         }
 
