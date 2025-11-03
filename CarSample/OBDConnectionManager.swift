@@ -99,7 +99,7 @@ class OBDConnectionManager: ObservableObject {
                         if case .failure(let error) = completion {
                             self?.logger.error("Continuous OBD updates failed: \(error.localizedDescription)")
                             // Optionally update state to failed
-                            self?.connectionState = .failed("Streaming failed: \(error.localizedDescription)")
+                          //  self?.connectionState = .failed("Streaming failed: \(error.localizedDescription)")
                         }
                     },
                     receiveValue: { [weak self] measurements in
