@@ -11,7 +11,7 @@ import UIKit
 import CarPlay
 import os.log
 
-func drawGaugeImage(for value: Double, size: CGSize = CGSize(width: 72, height: 72)) -> UIImage {
+func drawGaugeImage(for value: Double, size: CGSize = CPGridTemplate.maximumGridButtonImageSize) -> UIImage {
     // Clamp value to 0...20, then normalize to 0...1
     let clamped = max(0.0, min(20.0, value))
     let progress = CGFloat(clamped / 20.0)
@@ -28,9 +28,11 @@ func drawGaugeImage(for value: Double, size: CGSize = CGSize(width: 72, height: 
         let lineWidth: CGFloat = max(4, min(size.width, size.height) * 0.25)
         let radius = (min(size.width, size.height) - lineWidth) / 2.0
 
-        // Angles (start at top, clockwise)
-        let startAngle: CGFloat = -.pi / 2
-        let endAngle: CGFloat = startAngle + 2 * .pi
+        // Angles for a speedometer-style gauge (from 8 o'clock to 4 o'clock)
+        // This creates a 240-degree arc.
+        let startAngle: CGFloat = (5.0 / 6.0) * .pi      // ~8 o'clock position
+        let sweepAngle: CGFloat = (4.0 / 3.0) * .pi      // 240-degree sweep
+        let endAngle: CGFloat = startAngle + sweepAngle  // ~4 o'clock position
 
         // Background track
         let trackPath = UIBezierPath(arcCenter: center,
@@ -39,26 +41,21 @@ func drawGaugeImage(for value: Double, size: CGSize = CGSize(width: 72, height: 
                                      endAngle: endAngle,
                                      clockwise: true)
         trackPath.lineWidth = lineWidth
+        trackPath.lineCapStyle = .round // Rounded ends for a softer look
         UIColor.systemGray3.setStroke()
         trackPath.stroke()
 
         // Progress arc
-        let progressEnd = startAngle + (endAngle - startAngle) * progress
+        let progressEndAngle = startAngle + (sweepAngle * progress)
         let progressPath = UIBezierPath(arcCenter: center,
                                         radius: radius,
                                         startAngle: startAngle,
-                                        endAngle: progressEnd,
+                                        endAngle: progressEndAngle,
                                         clockwise: true)
         progressPath.lineCapStyle = .round
         progressPath.lineWidth = lineWidth
         UIColor.systemBlue.setStroke()
         progressPath.stroke()
-
-        // Optional: thin outer border for clarity
-        let outerBorder = UIBezierPath(ovalIn: rect.insetBy(dx: 0.5, dy: 0.5))
-        outerBorder.lineWidth = 1
-        UIColor.systemGray4.setStroke()
-        outerBorder.stroke()
     }
 }
 
