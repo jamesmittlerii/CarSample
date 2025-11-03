@@ -17,6 +17,7 @@
 		CBAD9EB924A3E3DE00989CA4 /* CarSampleUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBAD9EB824A3E3DE00989CA4 /* CarSampleUITests.swift */; };
 		CBAD9EC824A3E3EB00989CA4 /* CarPlay.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CBAD9EC724A3E3EB00989CA4 /* CarPlay.framework */; };
 		CBAD9ECA24A3E3FE00989CA4 /* CarPlaySceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBAD9EC924A3E3FE00989CA4 /* CarPlaySceneDelegate.swift */; };
+		D4C95C2C2EB904A300364CB6 /* OBDII.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4C95C2B2EB9049F00364CB6 /* OBDII.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -54,6 +55,7 @@
 		CBAD9EC724A3E3EB00989CA4 /* CarPlay.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CarPlay.framework; path = System/Library/Frameworks/CarPlay.framework; sourceTree = SDKROOT; };
 		CBAD9EC924A3E3FE00989CA4 /* CarPlaySceneDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CarPlaySceneDelegate.swift; sourceTree = "<group>"; };
 		CBAD9ECB24A3E73800989CA4 /* CarSample.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = CarSample.entitlements; sourceTree = "<group>"; };
+		D4C95C2B2EB9049F00364CB6 /* OBDII.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OBDII.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -106,6 +108,7 @@
 		CBAD9E9524A3E3DD00989CA4 /* CarSample */ = {
 			isa = PBXGroup;
 			children = (
+				D4C95C2B2EB9049F00364CB6 /* OBDII.swift */,
 				CBAD9E9624A3E3DD00989CA4 /* AppDelegate.swift */,
 				CBAD9E9824A3E3DD00989CA4 /* SceneDelegate.swift */,
 				CBAD9E9A24A3E3DD00989CA4 /* ViewController.swift */,
@@ -277,6 +280,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				CBAD9E9B24A3E3DD00989CA4 /* ViewController.swift in Sources */,
+				D4C95C2C2EB904A300364CB6 /* OBDII.swift in Sources */,
 				CBAD9E9724A3E3DD00989CA4 /* AppDelegate.swift in Sources */,
 				CBAD9ECA24A3E3FE00989CA4 /* CarPlaySceneDelegate.swift in Sources */,
 				CBAD9E9924A3E3DD00989CA4 /* SceneDelegate.swift in Sources */,

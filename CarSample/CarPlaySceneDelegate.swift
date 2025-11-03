@@ -119,9 +119,22 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate {
         
         self.interfaceController = interfaceController
         
-        let myTemplate = self.makeAlbumsListTemplate()
+        // Build the three tabs
+        let gaugesTemplate = self.makeAlbumsListTemplate()
+        gaugesTemplate.tabTitle = "Gauges"
+        gaugesTemplate.tabImage = symbolImage(named: "gauge")
+
+        let diagnosticsTemplate = self.makeDiagnosticsTemplate()
+        diagnosticsTemplate.tabTitle = "Diagnostics"
+        diagnosticsTemplate.tabImage = symbolImage(named: "wrench.and.screwdriver")
+
+        let settingsTemplate = self.makeSettingsTemplate()
+        settingsTemplate.tabTitle = "Settings"
+        settingsTemplate.tabImage = symbolImage(named: "gear")
+
+        let tabBar = CPTabBarTemplate(templates: [gaugesTemplate, diagnosticsTemplate, settingsTemplate])
         
-        interfaceController.setRootTemplate(myTemplate,
+        interfaceController.setRootTemplate(tabBar,
                                             animated: true,
                                             completion: nil)
         
@@ -129,12 +142,13 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate {
         startPriceUpdates()
     }
 
-   
-
-
-
-
-
+    func symbolImage(named name: String) -> UIImage? {
+        if #available(iOS 13.0, *) {
+            return UIImage(systemName: name)
+        } else {
+            return nil
+        }
+    }
 
     func makeAlbumsGridTemplate() -> CPGridTemplate {
         let buttons = albums.map { album -> CPGridButton in
@@ -142,7 +156,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate {
             let button = CPGridButton(titleVariants: [album.title],
                                       image: dynamicImage) { [weak self] _ in
                 guard let self else { return }
-                self.presentInformationTemplate(for: album)
+                self.presentContactTemplate2(for: album)
             }
             return button
         }
@@ -150,6 +164,79 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate {
         
         albumsGridTemplate = template
         return template
+    }
+    
+    @MainActor
+    private func presentContactTemplate2(for album: Album)  {
+        // 1. Create a CPContact object
+                let contact = CPContact(
+                    name: album.title,
+                    image: drawGaugeImage(for: album.price) // Use a system image or your own
+                )
+                contact.subtitle = album.artist
+                contact.informativeText = "Some additional details about the contact."
+        
+        let albumDetails = [
+               "Price": String(format: "$%.2f", album.price),
+               "Year": "\(album.year)",
+               "Genre": album.genre,
+               "Length": "\(album.lengthInMinutes) min"
+           ]
+           
+           // You can represent these details as `CPAction` buttons in the contact’s actions array
+           let detailActions = albumDetails.map { key, value in
+               CPTextButton(title: "\(key): \(value)", textStyle: .normal) { _ in
+                   // These are read-only buttons — no-op or show a message
+               }
+           }
+
+                // 2. Add actions (e.g., call, message, directions)
+                let callButton = CPContactCallButton(
+                    handler: { button in
+                        // Handle the call action (e.g., use tel:// URL scheme or VoIP)
+                        print("Call button tapped for \(contact.name)")
+                    }
+                )
+            
+                contact.actions = [callButton] // CPContact can display up to 4 actions
+
+                // 3. Create the CPContactTemplate using the contact object
+                let contactTemplate = CPContactTemplate(contact: contact)
+        // Present the template
+        interfaceController?.pushTemplate(contactTemplate, animated: true, completion: nil)
+    }
+    
+    @MainActor
+    private func presentContactTemplate(for album: Album) {
+        // Create a CPContact to represent the album
+        let contact = CPContact()
+        contact.name = album.title
+        contact.subtitle = album.artist
+        
+        contact.image = drawGaugeImage(for: album.price)
+      
+        // Define additional labeled information
+        let albumDetails = [
+            "Price": String(format: "$%.2f", album.price),
+            "Year": "\(album.year)",
+            "Genre": album.genre,
+            "Length": "\(album.lengthInMinutes) min"
+        ]
+        
+        // You can represent these details as `CPAction` buttons in the contact’s actions array
+        _ = albumDetails.map { key, value in
+            CPTextButton(title: "\(key): \(value)", textStyle: .normal) { _ in
+                // These are read-only buttons — no-op or show a message
+            }
+        }
+        
+       
+        
+        // Create the contact template
+        let template = CPContactTemplate(contact: contact)
+        
+        // Present the template
+        interfaceController?.pushTemplate(template, animated: true, completion: nil)
     }
     
     @MainActor
@@ -168,6 +255,8 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate {
                                              layout: .twoColumn,
                                              items: [artistItem, priceItem, yearItem, genreItem, lengthItem],
                                              actions: [tracklistAction])
+        
+          
         
         interfaceController?.pushTemplate(template, animated: true, completion: nil)
     }
@@ -225,7 +314,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate {
             let button = CPGridButton(titleVariants: [album.title],
                                       image: dynamicImage) { [weak self] _ in
                 guard let self else { return }
-                self.presentInformationTemplate(for: album)
+                self.presentContactTemplate2(for: album)
             }
             return button
         }
@@ -245,7 +334,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate {
 
         // Create a single row item to contain all albums
         let item = CPListImageRowItem(
-            text: "Gauges",
+            text: "",
             elements: rowElements,
             allowsMultipleLines: true
         )
@@ -264,7 +353,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate {
                 return
             }
             let tappedAlbum = self.albums[index]
-            self.presentInformationTemplate(for: tappedAlbum)
+            self.presentContactTemplate2(for: tappedAlbum)
             completion()
         }
 
@@ -276,6 +365,61 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate {
         let template = CPListTemplate(title: "", sections: [section])
 
         self.albumsListTemplate = template
+        return template
+    }
+
+    // MARK: - Diagnostics and Settings tabs
+
+    private func makeDiagnosticsTemplate() -> CPListTemplate {
+        let items: [CPListItem] = [
+            {
+                let count = exampleOBDCodes.count
+                let statusText = count == 0 ? "No DTCs" : "\(count) Code\(count == 1 ? "" : "s")"
+                let i = CPListItem(text: "OBD-II Status", detailText: statusText)
+                i.handler = { [weak self] _, completion in
+                    guard let self else { completion(); return }
+                    let obdTemplate = self.makeOBDListTemplate(codes: exampleOBDCodes)
+                    self.interfaceController?.pushTemplate(obdTemplate, animated: true, completion: nil)
+                    completion()
+                }
+                return i
+            }(),
+            {
+                let i = CPListItem(text: "Battery Health", detailText: "Good")
+                i.handler = { _, completion in completion() }
+                return i
+            }(),
+            {
+                let i = CPListItem(text: "Tire Pressure", detailText: "Front: 36 psi, Rear: 34 psi")
+                i.handler = { _, completion in completion() }
+                return i
+            }()
+        ]
+        let section = CPListSection(items: items)
+        let template = CPListTemplate(title: "Diagnostics", sections: [section])
+        return template
+    }
+
+    private func makeSettingsTemplate() -> CPListTemplate {
+        let items: [CPListItem] = [
+            {
+                let i = CPListItem(text: "Units", detailText: "Metric")
+                i.handler = { _, completion in completion() }
+                return i
+            }(),
+            {
+                let i = CPListItem(text: "Theme", detailText: "Automatic")
+                i.handler = { _, completion in completion() }
+                return i
+            }(),
+            {
+                let i = CPListItem(text: "About", detailText: "Version 1.0")
+                i.handler = { _, completion in completion() }
+                return i
+            }()
+        ]
+        let section = CPListSection(items: items)
+        let template = CPListTemplate(title: "Settings", sections: [section])
         return template
     }
 
@@ -297,5 +441,51 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate {
             albums[i].price = (clamped * 100).rounded() / 100 // round to cents
         }
         logger.debug("Prices updated in background")
+    }
+}
+
+// MARK: - OBD-II Templates
+extension CarPlaySceneDelegate {
+    private func makeOBDListTemplate(codes: [OBDCode]) -> CPListTemplate {
+        // Map severity to a system image name for quick visual cue
+        func imageName(for severity: OBDCode.Severity) -> String {
+            switch severity {
+            case .low: return "exclamationmark.circle"
+            case .moderate: return "exclamationmark.triangle"
+            case .high: return "bolt.trianglebadge.exclamationmark"
+            case .critical: return "xmark.octagon"
+            }
+        }
+
+        let items: [CPListItem] = codes.map { code in
+            let title = "\(code.code) • \(code.title)"
+            let item = CPListItem(text: title, detailText: code.severity.rawValue)
+            if let img = symbolImage(named: imageName(for: code.severity)) {
+                item.setImage(img)
+            }
+            item.handler = { [weak self] _, completion in
+                Task { @MainActor in
+                    await self?.presentOBDDetail(for: code)
+                    completion()
+                }
+            }
+            return item
+        }
+
+        let section = CPListSection(items: items)
+        let title = "OBD-II Diagnostic Codes"
+        return CPListTemplate(title: title, sections: [section])
+    }
+
+    @MainActor
+    private func presentOBDDetail(for code: OBDCode) async {
+        let items: [CPInformationItem] = [
+            CPInformationItem(title: "Code", detail: code.code),
+            CPInformationItem(title: "Title", detail: code.title),
+            CPInformationItem(title: "Severity", detail: code.severity.rawValue),
+            CPInformationItem(title: "Description", detail: code.description)
+        ]
+        let template = CPInformationTemplate(title: "DTC \(code.code)", layout: .twoColumn, items: items, actions: [])
+        interfaceController?.pushTemplate(template, animated: true, completion: nil)
     }
 }
