@@ -118,7 +118,6 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate {
         ]
     
     // Keep references to update UI efficiently
-    private var albumsGridTemplate: CPGridTemplate?
     private var albumsListTemplate: CPListTemplate?
     
     // Background task to update prices
@@ -152,8 +151,6 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate {
                                             animated: true,
                                             completion: nil)
         
-        // Start background price updates when CarPlay connects
-        startPriceUpdates()
         
         // Start OBD-II connection asynchronously
         Task { [weak self] in
@@ -177,28 +174,34 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate {
         let pids: [OBDCommand] = OBDPIDLibrary.standard.map { pidDef in
             OBDCommand.mode1(pidDef.pid)
         }
+        
+        for pid in OBDPIDLibrary.standard {
+            
+            let command = OBDCommand.mode1(pid.pid)
+            obdService
+                .startContinuousUpdates([command])
+                .receive(on: DispatchQueue.main)
+                .sink(
+                    receiveCompletion: { [weak self] completion in
+                        if case .failure(let error) = completion {
+                            self?.logger.error("Continuous OBD updates failed: \(error.localizedDescription)")
+                        }
+                    },
+                    receiveValue: { [weak self] measurements in
+                        guard let self else { return }
+                        // Keep the latest measurements if needed
+                        self.latestMeasurements = measurements
 
-        obdService
-            .startContinuousUpdates(pids)
-            .receive(on: DispatchQueue.main)
-            .sink(
-                receiveCompletion: { [weak self] completion in
-                    if case .failure(let error) = completion {
-                        self?.logger.error("Continuous OBD updates failed: \(error.localizedDescription)")
+                     
+                        // You could trigger UI updates here using the measurements
+                        self.refreshAlbumListIfVisible()
                     }
-                },
-                receiveValue: { [weak self] measurements in
-                    guard let self else { return }
-                    // Keep the latest measurements if needed
-                    self.latestMeasurements = measurements
+                )
+                .store(in: &cancellables)
+            
+        }
 
-                    // Example: read vehicle speed
-                    let speed = measurements[.mode1(.speed)]?.value ?? 0
-                    self.logger.debug("Speed: \(speed)")
-                    // You could trigger UI updates here using the measurements
-                }
-            )
-            .store(in: &cancellables)
+       
     }
 
     func symbolImage(named name: String) -> UIImage? {
@@ -209,21 +212,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate {
         }
     }
 
-    func makeAlbumsGridTemplate() -> CPGridTemplate {
-        let buttons = albums.map { album -> CPGridButton in
-            let dynamicImage = drawGaugeImage(for: album.price)
-            let button = CPGridButton(titleVariants: [album.title],
-                                      image: dynamicImage) { [weak self] _ in
-                guard let self else { return }
-                self.presentInformationTemplate(for: album)
-            }
-            return button
-        }
-        let template = CPGridTemplate(title: "Albums", gridButtons: buttons)
-        
-        albumsGridTemplate = template
-        return template
-    }
+    
     
    
     
@@ -279,51 +268,41 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate {
         cancellables.removeAll()
     }
     
-    // MARK: - Background price updates
-    
-    private func startPriceUpdates() {
-        // Avoid multiple tasks
-        priceUpdateTask?.cancel()
-        priceUpdateTask = Task.detached { [weak self] in
-            guard let self else { return }
-            // Randomly update prices while connected
-            while !Task.isCancelled {
-                try? await Task.sleep(for: .seconds(1))
-                await self.randomlyAdjustPrices()
-                //await self.refreshAlbumGridIfVisible()
-               await self.refreshAlbumListIfVisible()
-            }
-        }
-    }
-    
+    // MARK: - Gauges (sensors) section using OBDPIDLibrary
     @MainActor
-    private func refreshAlbumGridIfVisible() {
-        guard let currentTemplate = albumsGridTemplate else { return }
-        // Rebuild buttons with updated dynamic images
-        let updatedButtons = albums.map { album -> CPGridButton in
-            let dynamicImage = drawGaugeImage(for: album.price)
-            let button = CPGridButton(titleVariants: [album.title],
-                                      image: dynamicImage) { [weak self] _ in
-                guard let self else { return }
-                self.presentInformationTemplate(for: album)
-            }
-            return button
-        }
-        currentTemplate.updateGridButtons(updatedButtons)
-    }
+    private func makeGaugesSection() -> CPListSection {
+        let sensors = OBDPIDLibrary.standard
 
-    @MainActor
-    private func makeAlbumsSection() -> CPListSection {
-        // Build one row element per album
-        let rowElements = albums.map { album in
-            CPListImageRowItemRowElement(
-                image: drawGaugeImage(for: album.price),
-                title: album.title,
-                subtitle: album.artist
+        // Helper to get current value for a PID
+        func currentValue(for pid: OBDPID) -> Double? {
+            let command = OBDCommand.mode1(pid.pid)
+            return latestMeasurements[command]?.value
+        }
+
+        // Build one row element per sensor
+        let rowElements: [CPListImageRowItemRowElement] = sensors.map { pid in
+            let value = currentValue(for: pid) ?? pid.typicalRange.min
+            // Normalize value to 0...1 within the typical range, then map to 0...20 for our gauge drawer
+            let normalized = pid.typicalRange.normalizedPosition(for: value)
+            let gaugeValue = normalized * 20.0
+            let image = drawGaugeImage(for: gaugeValue)
+
+            let subtitle: String = {
+                if let v = currentValue(for: pid) {
+                    return String(format: "%.1f %@", v, pid.units)
+                } else {
+                    return "— \(pid.units)"
+                }
+            }()
+
+            return CPListImageRowItemRowElement(
+                image: image,
+                title: pid.name,
+                subtitle: subtitle
             )
         }
 
-        // Create a single row item to contain all albums
+        // Create a single row item to contain all sensors
         let item = CPListImageRowItem(
             text: "",
             elements: rowElements,
@@ -333,26 +312,29 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate {
             completion()
         }
 
-        // Handler for individual album taps
+        // Handler for individual sensor taps
         item.listImageRowHandler = { [weak self] _, index, completion in
             guard let self = self else {
                 completion()
                 return
             }
-            guard index >= 0 && index < self.albums.count else {
+            guard index >= 0 && index < sensors.count else {
                 completion()
                 return
             }
-            let tappedAlbum = self.albums[index]
-            self.presentInformationTemplate(for: tappedAlbum)
-            completion()
+            let tappedPID = sensors[index]
+            Task { @MainActor in
+                await self.presentSensorTemplate(for: tappedPID)
+                completion()
+            }
         }
 
         return CPListSection(items: [item])
     }
     
+    // Replaces the previous album-based template with a sensor-based template
     func makeAlbumsListTemplate() -> CPListTemplate {
-        let section = makeAlbumsSection()
+        let section = makeGaugesSection()
         let template = CPListTemplate(title: "", sections: [section])
 
         self.albumsListTemplate = template
@@ -417,22 +399,11 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate {
     @MainActor
     private func refreshAlbumListIfVisible() {
         guard let currentTemplate = albumsListTemplate else { return }
-        let updatedSection = makeAlbumsSection()
+        let updatedSection = makeGaugesSection()
         currentTemplate.updateSections([updatedSection])
     }
 
-    
-    @MainActor
-    private func randomlyAdjustPrices() {
-        // Adjust each price by +/- up to 50 cents, then clamp between $0.00 and $20.00
-        for i in albums.indices {
-            let delta = Double.random(in: -0.5...0.5)
-            let unclamped = albums[i].price + delta
-            let clamped = min(20.0, max(0.0, unclamped))
-            albums[i].price = (clamped * 100).rounded() / 100 // round to cents
-        }
-        logger.debug("Prices updated in background")
-    }
+   
 }
 
 // MARK: - OBD-II Templates
@@ -477,6 +448,35 @@ extension CarPlaySceneDelegate {
             CPInformationItem(title: "Description", detail: code.description)
         ]
         let template = CPInformationTemplate(title: "DTC \(code.code)", layout: .twoColumn, items: items, actions: [])
+        interfaceController?.pushTemplate(template, animated: true, completion: nil)
+    }
+
+    // Sensor detail presenter
+    @MainActor
+    private func presentSensorTemplate(for pid: OBDPID) async {
+        let command = OBDCommand.mode1(pid.pid)
+        let current = latestMeasurements[command]?.value
+
+        var items: [CPInformationItem] = []
+        if let current = current {
+            items.append(CPInformationItem(title: "Current", detail: String(format: "%.2f %@", current, pid.units)))
+        } else {
+            items.append(CPInformationItem(title: "Current", detail: "— \(pid.units)"))
+        }
+        items.append(CPInformationItem(title: "Units", detail: pid.units))
+        items.append(CPInformationItem(title: "Formula", detail: pid.formula))
+        items.append(CPInformationItem(title: "Typical Range", detail: String(format: "%.1f – %.1f %@", pid.typicalRange.min, pid.typicalRange.max, pid.units)))
+        if let warn = pid.warningRange {
+            items.append(CPInformationItem(title: "Warning Range", detail: String(format: "%.1f – %.1f %@", warn.min, warn.max, pid.units)))
+        }
+        if let danger = pid.dangerRange {
+            items.append(CPInformationItem(title: "Danger Range", detail: String(format: "%.1f – %.1f %@", danger.min, danger.max, pid.units)))
+        }
+        if let notes = pid.notes {
+            items.append(CPInformationItem(title: "Notes", detail: notes))
+        }
+
+        let template = CPInformationTemplate(title: pid.name, layout: .twoColumn, items: items, actions: [])
         interfaceController?.pushTemplate(template, animated: true, completion: nil)
     }
 }
