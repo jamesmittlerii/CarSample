@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import SwiftOBD2
 // CarPlay App Lifecycle
 
 import CarPlay
@@ -64,6 +65,13 @@ func drawGaugeImage(for value: Double, size: CGSize = CPListImageRowItemElement.
 class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate {
     var interfaceController: CPInterfaceController?
     let logger = Logger()
+    
+    // Local OBD service instance
+    let obdService = OBDService(
+        connectionType: .wifi,
+        host: "192.168.4.207",
+        port: 35000
+    )
     
     // MARK: - Album model and UI state
     struct Album {
@@ -140,6 +148,19 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate {
         
         // Start background price updates when CarPlay connects
         startPriceUpdates()
+        
+        // Start OBD-II connection asynchronously
+        Task { [weak self] in
+            guard let self else { return }
+            do {
+                let obd2Info = try await obdService.startConnection()
+                // Optionally log or use obd2Info here (e.g., VIN or protocol)
+                self.logger.info("OBD-II connected successfully.")
+                _ = obd2Info // prevent unused variable warning if not used yet
+            } catch {
+                self.logger.error("OBD-II connection failed: \(error.localizedDescription)")
+            }
+        }
     }
 
     func symbolImage(named name: String) -> UIImage? {

@@ -1,0 +1,15 @@
+{
+  "originHash" : "165e88c68c4561ae4b8e4880f45fc72cb413170df9bf4c1fa908280ec7092d0a",
+  "pins" : [
+    {
+      "identity" : "swiftobd2",
+      "kind" : "remoteSourceControl",
+      "location" : "git@github.com:jamesmittlerii/SwiftOBD2.git",
+      "state" : {
+        "branch" : "main",
+        "revision" : "e6b2783256d73f0ab3bb77c42f1c91c496740072"
+      }
+    }
+  ],
+  "version" : 3
+}

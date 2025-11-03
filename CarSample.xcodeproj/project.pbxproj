@@ -17,7 +17,9 @@
 		CBAD9EB924A3E3DE00989CA4 /* CarSampleUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBAD9EB824A3E3DE00989CA4 /* CarSampleUITests.swift */; };
 		CBAD9EC824A3E3EB00989CA4 /* CarPlay.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CBAD9EC724A3E3EB00989CA4 /* CarPlay.framework */; };
 		CBAD9ECA24A3E3FE00989CA4 /* CarPlaySceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBAD9EC924A3E3FE00989CA4 /* CarPlaySceneDelegate.swift */; };
+		D43E33262EB93CD600752784 /* SwiftOBD2 in Frameworks */ = {isa = PBXBuildFile; productRef = D43E33252EB93CD600752784 /* SwiftOBD2 */; };
 		D4C95C2C2EB904A300364CB6 /* OBDII.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4C95C2B2EB9049F00364CB6 /* OBDII.swift */; };
+		D4C95C302EB9352600364CB6 /* OBDIIPID.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4C95C2F2EB9352000364CB6 /* OBDIIPID.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -56,6 +58,7 @@
 		CBAD9EC924A3E3FE00989CA4 /* CarPlaySceneDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CarPlaySceneDelegate.swift; sourceTree = "<group>"; };
 		CBAD9ECB24A3E73800989CA4 /* CarSample.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = CarSample.entitlements; sourceTree = "<group>"; };
 		D4C95C2B2EB9049F00364CB6 /* OBDII.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OBDII.swift; sourceTree = "<group>"; };
+		D4C95C2F2EB9352000364CB6 /* OBDIIPID.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OBDIIPID.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -64,6 +67,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				CBAD9EC824A3E3EB00989CA4 /* CarPlay.framework in Frameworks */,
+				D43E33262EB93CD600752784 /* SwiftOBD2 in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -108,6 +112,7 @@
 		CBAD9E9524A3E3DD00989CA4 /* CarSample */ = {
 			isa = PBXGroup;
 			children = (
+				D4C95C2F2EB9352000364CB6 /* OBDIIPID.swift */,
 				D4C95C2B2EB9049F00364CB6 /* OBDII.swift */,
 				CBAD9E9624A3E3DD00989CA4 /* AppDelegate.swift */,
 				CBAD9E9824A3E3DD00989CA4 /* SceneDelegate.swift */,
@@ -236,6 +241,9 @@
 				Base,
 			);
 			mainGroup = CBAD9E8A24A3E3DD00989CA4;
+			packageReferences = (
+				D43E33242EB93CD600752784 /* XCRemoteSwiftPackageReference "SwiftOBD2" */,
+			);
 			productRefGroup = CBAD9E9424A3E3DD00989CA4 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -284,6 +292,7 @@
 				CBAD9E9724A3E3DD00989CA4 /* AppDelegate.swift in Sources */,
 				CBAD9ECA24A3E3FE00989CA4 /* CarPlaySceneDelegate.swift in Sources */,
 				CBAD9E9924A3E3DD00989CA4 /* SceneDelegate.swift in Sources */,
+				D4C95C302EB9352600364CB6 /* OBDIIPID.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -468,15 +477,18 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = CarSample/CarSample.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = L97LVVC8Y4;
 				INFOPLIST_FILE = CarSample/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.vonbelow.CarSample;
+				PRODUCT_BUNDLE_IDENTIFIER = com.rheosoft.obdii;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -488,15 +500,18 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = CarSample/CarSample.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = L97LVVC8Y4;
 				INFOPLIST_FILE = CarSample/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.vonbelow.CarSample;
+				PRODUCT_BUNDLE_IDENTIFIER = com.rheosoft.obdii;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -620,6 +635,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		D43E33242EB93CD600752784 /* XCRemoteSwiftPackageReference "SwiftOBD2" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "git@github.com:jamesmittlerii/SwiftOBD2.git";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		D43E33252EB93CD600752784 /* SwiftOBD2 */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D43E33242EB93CD600752784 /* XCRemoteSwiftPackageReference "SwiftOBD2" */;
+			productName = SwiftOBD2;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = CBAD9E8B24A3E3DD00989CA4 /* Project object */;
 }
