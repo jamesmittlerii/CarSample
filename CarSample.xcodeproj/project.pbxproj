@@ -18,6 +18,7 @@
 		CBAD9EC824A3E3EB00989CA4 /* CarPlay.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CBAD9EC724A3E3EB00989CA4 /* CarPlay.framework */; };
 		CBAD9ECA24A3E3FE00989CA4 /* CarPlaySceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBAD9EC924A3E3FE00989CA4 /* CarPlaySceneDelegate.swift */; };
 		D43E33262EB93CD600752784 /* SwiftOBD2 in Frameworks */ = {isa = PBXBuildFile; productRef = D43E33252EB93CD600752784 /* SwiftOBD2 */; };
+		D43E332A2EB9568F00752784 /* ConfigData.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43E33292EB9568F00752784 /* ConfigData.swift */; };
 		D4C95C2C2EB904A300364CB6 /* OBDII.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4C95C2B2EB9049F00364CB6 /* OBDII.swift */; };
 		D4C95C302EB9352600364CB6 /* OBDIIPID.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4C95C2F2EB9352000364CB6 /* OBDIIPID.swift */; };
 /* End PBXBuildFile section */
@@ -57,6 +58,7 @@
 		CBAD9EC724A3E3EB00989CA4 /* CarPlay.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CarPlay.framework; path = System/Library/Frameworks/CarPlay.framework; sourceTree = SDKROOT; };
 		CBAD9EC924A3E3FE00989CA4 /* CarPlaySceneDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CarPlaySceneDelegate.swift; sourceTree = "<group>"; };
 		CBAD9ECB24A3E73800989CA4 /* CarSample.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = CarSample.entitlements; sourceTree = "<group>"; };
+		D43E33292EB9568F00752784 /* ConfigData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigData.swift; sourceTree = "<group>"; };
 		D4C95C2B2EB9049F00364CB6 /* OBDII.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OBDII.swift; sourceTree = "<group>"; };
 		D4C95C2F2EB9352000364CB6 /* OBDIIPID.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OBDIIPID.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -112,6 +114,7 @@
 		CBAD9E9524A3E3DD00989CA4 /* CarSample */ = {
 			isa = PBXGroup;
 			children = (
+				D43E33292EB9568F00752784 /* ConfigData.swift */,
 				D4C95C2F2EB9352000364CB6 /* OBDIIPID.swift */,
 				D4C95C2B2EB9049F00364CB6 /* OBDII.swift */,
 				CBAD9E9624A3E3DD00989CA4 /* AppDelegate.swift */,
@@ -289,6 +292,7 @@
 			files = (
 				CBAD9E9B24A3E3DD00989CA4 /* ViewController.swift in Sources */,
 				D4C95C2C2EB904A300364CB6 /* OBDII.swift in Sources */,
+				D43E332A2EB9568F00752784 /* ConfigData.swift in Sources */,
 				CBAD9E9724A3E3DD00989CA4 /* AppDelegate.swift in Sources */,
 				CBAD9ECA24A3E3FE00989CA4 /* CarPlaySceneDelegate.swift in Sources */,
 				CBAD9E9924A3E3DD00989CA4 /* SceneDelegate.swift in Sources */,
