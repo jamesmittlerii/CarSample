@@ -28,14 +28,14 @@ class OBDConnectionManager: ObservableObject {
     }
 
     static let shared = OBDConnectionManager()
-    private let logger = Logger(subsystem: "com.CarSample", category: "OBDConnection")
+    private let logger = Logger(subsystem: "com.rheosoft.obdii", category: "OBDConnection")
 
     @Published var connectionState: ConnectionState = .disconnected
 
     // Track latest/min/max per PID
     struct PIDStats: Equatable {
         // Separate logger for the nested type
-        private static let logger = Logger(subsystem: "com.CarSample", category: "OBDConnection.PIDStats")
+        private static let logger = Logger(subsystem: "com.rheosoft.obdii", category: "OBDConnection.PIDStats")
 
         var pid: OBDCommand.Mode1
         var latest: MeasurementResult

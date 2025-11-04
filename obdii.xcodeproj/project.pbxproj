@@ -13,8 +13,8 @@
 		CBAD9E9E24A3E3DD00989CA4 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = CBAD9E9C24A3E3DD00989CA4 /* Main.storyboard */; };
 		CBAD9EA024A3E3DE00989CA4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CBAD9E9F24A3E3DE00989CA4 /* Assets.xcassets */; };
 		CBAD9EA324A3E3DE00989CA4 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = CBAD9EA124A3E3DE00989CA4 /* LaunchScreen.storyboard */; };
-		CBAD9EAE24A3E3DE00989CA4 /* CarSampleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBAD9EAD24A3E3DE00989CA4 /* CarSampleTests.swift */; };
-		CBAD9EB924A3E3DE00989CA4 /* CarSampleUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBAD9EB824A3E3DE00989CA4 /* CarSampleUITests.swift */; };
+		CBAD9EAE24A3E3DE00989CA4 /* obdiiTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBAD9EAD24A3E3DE00989CA4 /* obdiiTests.swift */; };
+		CBAD9EB924A3E3DE00989CA4 /* obdiiUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBAD9EB824A3E3DE00989CA4 /* obdiiUITests.swift */; };
 		CBAD9EC824A3E3EB00989CA4 /* CarPlay.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CBAD9EC724A3E3EB00989CA4 /* CarPlay.framework */; };
 		CBAD9ECA24A3E3FE00989CA4 /* CarPlaySceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBAD9EC924A3E3FE00989CA4 /* CarPlaySceneDelegate.swift */; };
 		D43E332A2EB9568F00752784 /* ConfigData.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43E33292EB9568F00752784 /* ConfigData.swift */; };
@@ -36,19 +36,19 @@
 			containerPortal = CBAD9E8B24A3E3DD00989CA4 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = CBAD9E9224A3E3DD00989CA4;
-			remoteInfo = CarSample;
+			remoteInfo = obdii;
 		};
 		CBAD9EB524A3E3DE00989CA4 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = CBAD9E8B24A3E3DD00989CA4 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = CBAD9E9224A3E3DD00989CA4;
-			remoteInfo = CarSample;
+			remoteInfo = obdii;
 		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		CBAD9E9324A3E3DD00989CA4 /* CarSample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CarSample.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		CBAD9E9324A3E3DD00989CA4 /* obdii.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = obdii.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CBAD9E9624A3E3DD00989CA4 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		CBAD9E9824A3E3DD00989CA4 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		CBAD9E9A24A3E3DD00989CA4 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -56,15 +56,15 @@
 		CBAD9E9F24A3E3DE00989CA4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		CBAD9EA224A3E3DE00989CA4 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		CBAD9EA424A3E3DE00989CA4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		CBAD9EA924A3E3DE00989CA4 /* CarSampleTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CarSampleTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		CBAD9EAD24A3E3DE00989CA4 /* CarSampleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarSampleTests.swift; sourceTree = "<group>"; };
+		CBAD9EA924A3E3DE00989CA4 /* obdiiTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = obdiiTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		CBAD9EAD24A3E3DE00989CA4 /* obdiiTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = obdiiTests.swift; sourceTree = "<group>"; };
 		CBAD9EAF24A3E3DE00989CA4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		CBAD9EB424A3E3DE00989CA4 /* CarSampleUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CarSampleUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		CBAD9EB824A3E3DE00989CA4 /* CarSampleUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarSampleUITests.swift; sourceTree = "<group>"; };
+		CBAD9EB424A3E3DE00989CA4 /* obdiiUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = obdiiUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		CBAD9EB824A3E3DE00989CA4 /* obdiiUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = obdiiUITests.swift; sourceTree = "<group>"; };
 		CBAD9EBA24A3E3DE00989CA4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		CBAD9EC724A3E3EB00989CA4 /* CarPlay.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CarPlay.framework; path = System/Library/Frameworks/CarPlay.framework; sourceTree = SDKROOT; };
 		CBAD9EC924A3E3FE00989CA4 /* CarPlaySceneDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CarPlaySceneDelegate.swift; sourceTree = "<group>"; };
-		CBAD9ECB24A3E73800989CA4 /* CarSample.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = CarSample.entitlements; sourceTree = "<group>"; };
+		CBAD9ECB24A3E73800989CA4 /* obdii.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = obdii.entitlements; sourceTree = "<group>"; };
 		D43E33292EB9568F00752784 /* ConfigData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigData.swift; sourceTree = "<group>"; };
 		D43E332C2EB9581400752784 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		D4A659EF2EB95E4A00E1A1C9 /* OBDConnectionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OBDConnectionManager.swift; sourceTree = "<group>"; };
@@ -107,9 +107,9 @@
 		CBAD9E8A24A3E3DD00989CA4 = {
 			isa = PBXGroup;
 			children = (
-				CBAD9E9524A3E3DD00989CA4 /* CarSample */,
-				CBAD9EAC24A3E3DE00989CA4 /* CarSampleTests */,
-				CBAD9EB724A3E3DE00989CA4 /* CarSampleUITests */,
+				CBAD9E9524A3E3DD00989CA4 /* obdii */,
+				CBAD9EAC24A3E3DE00989CA4 /* obdiiTests */,
+				CBAD9EB724A3E3DE00989CA4 /* obdiiUITests */,
 				CBAD9E9424A3E3DD00989CA4 /* Products */,
 				CBAD9EC624A3E3EB00989CA4 /* Frameworks */,
 			);
@@ -118,14 +118,14 @@
 		CBAD9E9424A3E3DD00989CA4 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				CBAD9E9324A3E3DD00989CA4 /* CarSample.app */,
-				CBAD9EA924A3E3DE00989CA4 /* CarSampleTests.xctest */,
-				CBAD9EB424A3E3DE00989CA4 /* CarSampleUITests.xctest */,
+				CBAD9E9324A3E3DD00989CA4 /* obdii.app */,
+				CBAD9EA924A3E3DE00989CA4 /* obdiiTests.xctest */,
+				CBAD9EB424A3E3DE00989CA4 /* obdiiUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		CBAD9E9524A3E3DD00989CA4 /* CarSample */ = {
+		CBAD9E9524A3E3DD00989CA4 /* obdii */ = {
 			isa = PBXGroup;
 			children = (
 				D4A659EF2EB95E4A00E1A1C9 /* OBDConnectionManager.swift */,
@@ -141,32 +141,32 @@
 				CBAD9E9F24A3E3DE00989CA4 /* Assets.xcassets */,
 				CBAD9EA124A3E3DE00989CA4 /* LaunchScreen.storyboard */,
 				CBAD9EA424A3E3DE00989CA4 /* Info.plist */,
-				CBAD9ECB24A3E73800989CA4 /* CarSample.entitlements */,
+				CBAD9ECB24A3E73800989CA4 /* obdii.entitlements */,
 				D4D045192EBA9FF600F80BCF /* SettingsViewModel.swift */,
 				D4D0451B2EBAA13000F80BCF /* CarPlayUtilities.swift */,
 				D4D0451D2EBAA13B00F80BCF /* CarPlayGaugesController.swift */,
 				D4D0451F2EBAA14000F80BCF /* CarPlayDiagnosticsController.swift */,
 				D4D045212EBAA14100F80BCF /* CarPlaySettingsController.swift */,
 			);
-			path = CarSample;
+			path = obdii;
 			sourceTree = "<group>";
 		};
-		CBAD9EAC24A3E3DE00989CA4 /* CarSampleTests */ = {
+		CBAD9EAC24A3E3DE00989CA4 /* obdiiTests */ = {
 			isa = PBXGroup;
 			children = (
-				CBAD9EAD24A3E3DE00989CA4 /* CarSampleTests.swift */,
+				CBAD9EAD24A3E3DE00989CA4 /* obdiiTests.swift */,
 				CBAD9EAF24A3E3DE00989CA4 /* Info.plist */,
 			);
-			path = CarSampleTests;
+			path = obdiiTests;
 			sourceTree = "<group>";
 		};
-		CBAD9EB724A3E3DE00989CA4 /* CarSampleUITests */ = {
+		CBAD9EB724A3E3DE00989CA4 /* obdiiUITests */ = {
 			isa = PBXGroup;
 			children = (
-				CBAD9EB824A3E3DE00989CA4 /* CarSampleUITests.swift */,
+				CBAD9EB824A3E3DE00989CA4 /* obdiiUITests.swift */,
 				CBAD9EBA24A3E3DE00989CA4 /* Info.plist */,
 			);
-			path = CarSampleUITests;
+			path = obdiiUITests;
 			sourceTree = "<group>";
 		};
 		CBAD9EC624A3E3EB00989CA4 /* Frameworks */ = {
@@ -180,9 +180,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		CBAD9E9224A3E3DD00989CA4 /* CarSample */ = {
+		CBAD9E9224A3E3DD00989CA4 /* obdii */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = CBAD9EBD24A3E3DE00989CA4 /* Build configuration list for PBXNativeTarget "CarSample" */;
+			buildConfigurationList = CBAD9EBD24A3E3DE00989CA4 /* Build configuration list for PBXNativeTarget "obdii" */;
 			buildPhases = (
 				CBAD9E8F24A3E3DD00989CA4 /* Sources */,
 				CBAD9E9024A3E3DD00989CA4 /* Frameworks */,
@@ -192,14 +192,14 @@
 			);
 			dependencies = (
 			);
-			name = CarSample;
-			productName = CarSample;
-			productReference = CBAD9E9324A3E3DD00989CA4 /* CarSample.app */;
+			name = obdii;
+			productName = obdii;
+			productReference = CBAD9E9324A3E3DD00989CA4 /* obdii.app */;
 			productType = "com.apple.product-type.application";
 		};
-		CBAD9EA824A3E3DE00989CA4 /* CarSampleTests */ = {
+		CBAD9EA824A3E3DE00989CA4 /* obdiiTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = CBAD9EC024A3E3DE00989CA4 /* Build configuration list for PBXNativeTarget "CarSampleTests" */;
+			buildConfigurationList = CBAD9EC024A3E3DE00989CA4 /* Build configuration list for PBXNativeTarget "obdiiTests" */;
 			buildPhases = (
 				CBAD9EA524A3E3DE00989CA4 /* Sources */,
 				CBAD9EA624A3E3DE00989CA4 /* Frameworks */,
@@ -210,14 +210,14 @@
 			dependencies = (
 				CBAD9EAB24A3E3DE00989CA4 /* PBXTargetDependency */,
 			);
-			name = CarSampleTests;
-			productName = CarSampleTests;
-			productReference = CBAD9EA924A3E3DE00989CA4 /* CarSampleTests.xctest */;
+			name = obdiiTests;
+			productName = obdiiTests;
+			productReference = CBAD9EA924A3E3DE00989CA4 /* obdiiTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		CBAD9EB324A3E3DE00989CA4 /* CarSampleUITests */ = {
+		CBAD9EB324A3E3DE00989CA4 /* obdiiUITests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = CBAD9EC324A3E3DE00989CA4 /* Build configuration list for PBXNativeTarget "CarSampleUITests" */;
+			buildConfigurationList = CBAD9EC324A3E3DE00989CA4 /* Build configuration list for PBXNativeTarget "obdiiUITests" */;
 			buildPhases = (
 				CBAD9EB024A3E3DE00989CA4 /* Sources */,
 				CBAD9EB124A3E3DE00989CA4 /* Frameworks */,
@@ -228,9 +228,9 @@
 			dependencies = (
 				CBAD9EB624A3E3DE00989CA4 /* PBXTargetDependency */,
 			);
-			name = CarSampleUITests;
-			productName = CarSampleUITests;
-			productReference = CBAD9EB424A3E3DE00989CA4 /* CarSampleUITests.xctest */;
+			name = obdiiUITests;
+			productName = obdiiUITests;
+			productReference = CBAD9EB424A3E3DE00989CA4 /* obdiiUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
@@ -256,7 +256,7 @@
 					};
 				};
 			};
-			buildConfigurationList = CBAD9E8E24A3E3DD00989CA4 /* Build configuration list for PBXProject "CarSample" */;
+			buildConfigurationList = CBAD9E8E24A3E3DD00989CA4 /* Build configuration list for PBXProject "obdii" */;
 			compatibilityVersion = "Xcode 9.3";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -272,9 +272,9 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				CBAD9E9224A3E3DD00989CA4 /* CarSample */,
-				CBAD9EA824A3E3DE00989CA4 /* CarSampleTests */,
-				CBAD9EB324A3E3DE00989CA4 /* CarSampleUITests */,
+				CBAD9E9224A3E3DD00989CA4 /* obdii */,
+				CBAD9EA824A3E3DE00989CA4 /* obdiiTests */,
+				CBAD9EB324A3E3DE00989CA4 /* obdiiUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -332,7 +332,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CBAD9EAE24A3E3DE00989CA4 /* CarSampleTests.swift in Sources */,
+				CBAD9EAE24A3E3DE00989CA4 /* obdiiTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -340,7 +340,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CBAD9EB924A3E3DE00989CA4 /* CarSampleUITests.swift in Sources */,
+				CBAD9EB924A3E3DE00989CA4 /* obdiiUITests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -349,12 +349,12 @@
 /* Begin PBXTargetDependency section */
 		CBAD9EAB24A3E3DE00989CA4 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = CBAD9E9224A3E3DD00989CA4 /* CarSample */;
+			target = CBAD9E9224A3E3DD00989CA4 /* obdii */;
 			targetProxy = CBAD9EAA24A3E3DE00989CA4 /* PBXContainerItemProxy */;
 		};
 		CBAD9EB624A3E3DE00989CA4 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = CBAD9E9224A3E3DD00989CA4 /* CarSample */;
+			target = CBAD9E9224A3E3DD00989CA4 /* obdii */;
 			targetProxy = CBAD9EB524A3E3DE00989CA4 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -508,11 +508,11 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = CarSample/CarSample.entitlements;
+				CODE_SIGN_ENTITLEMENTS = obdii/obdii.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = L97LVVC8Y4;
-				INFOPLIST_FILE = CarSample/Info.plist;
+				INFOPLIST_FILE = obdii/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -532,11 +532,11 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = CarSample/CarSample.entitlements;
+				CODE_SIGN_ENTITLEMENTS = obdii/obdii.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = L97LVVC8Y4;
-				INFOPLIST_FILE = CarSample/Info.plist;
+				INFOPLIST_FILE = obdii/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -556,18 +556,19 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				INFOPLIST_FILE = CarSampleTests/Info.plist;
+				DEVELOPMENT_TEAM = L97LVVC8Y4;
+				INFOPLIST_FILE = obdiiTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.vonbelow.CarSampleTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.rheosoft.obdiiTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CarSample.app/CarSample";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/obdii.app/obdii";
 			};
 			name = Debug;
 		};
@@ -576,18 +577,19 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				INFOPLIST_FILE = CarSampleTests/Info.plist;
+				DEVELOPMENT_TEAM = L97LVVC8Y4;
+				INFOPLIST_FILE = obdiiTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.vonbelow.CarSampleTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.rheosoft.obdiiTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CarSample.app/CarSample";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/obdii.app/obdii";
 			};
 			name = Release;
 		};
@@ -595,18 +597,21 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				INFOPLIST_FILE = CarSampleUITests/Info.plist;
+				DEVELOPMENT_TEAM = L97LVVC8Y4;
+				INFOPLIST_FILE = obdiiUITests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.vonbelow.CarSampleUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.rheosoft.obdiiUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = CarSample;
+				TEST_TARGET_NAME = obdii;
 			};
 			name = Debug;
 		};
@@ -614,25 +619,28 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				INFOPLIST_FILE = CarSampleUITests/Info.plist;
+				DEVELOPMENT_TEAM = L97LVVC8Y4;
+				INFOPLIST_FILE = obdiiUITests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.vonbelow.CarSampleUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.rheosoft.obdiiUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = CarSample;
+				TEST_TARGET_NAME = obdii;
 			};
 			name = Release;
 		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		CBAD9E8E24A3E3DD00989CA4 /* Build configuration list for PBXProject "CarSample" */ = {
+		CBAD9E8E24A3E3DD00989CA4 /* Build configuration list for PBXProject "obdii" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				CBAD9EBB24A3E3DE00989CA4 /* Debug */,
@@ -641,7 +649,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		CBAD9EBD24A3E3DE00989CA4 /* Build configuration list for PBXNativeTarget "CarSample" */ = {
+		CBAD9EBD24A3E3DE00989CA4 /* Build configuration list for PBXNativeTarget "obdii" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				CBAD9EBE24A3E3DE00989CA4 /* Debug */,
@@ -650,7 +658,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		CBAD9EC024A3E3DE00989CA4 /* Build configuration list for PBXNativeTarget "CarSampleTests" */ = {
+		CBAD9EC024A3E3DE00989CA4 /* Build configuration list for PBXNativeTarget "obdiiTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				CBAD9EC124A3E3DE00989CA4 /* Debug */,
@@ -659,7 +667,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		CBAD9EC324A3E3DE00989CA4 /* Build configuration list for PBXNativeTarget "CarSampleUITests" */ = {
+		CBAD9EC324A3E3DE00989CA4 /* Build configuration list for PBXNativeTarget "obdiiUITests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				CBAD9EC424A3E3DE00989CA4 /* Debug */,
