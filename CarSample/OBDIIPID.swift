@@ -44,6 +44,7 @@ struct ValueRange: Hashable, Codable {
 /// Represents a single OBD-II Parameter ID (PID) definition.
 struct OBDPID: Identifiable, Hashable, Codable {
     let id: UUID
+    let enabled: Bool
     let name: String
     let pid: OBDCommand.Mode1
     let formula: String
@@ -55,6 +56,7 @@ struct OBDPID: Identifiable, Hashable, Codable {
 
     init(
         id: UUID = UUID(),
+        enabled: Bool = false,
         name: String,
         pid: OBDCommand.Mode1,
         formula: String,
@@ -63,6 +65,7 @@ struct OBDPID: Identifiable, Hashable, Codable {
         warningRange: ValueRange? = nil,
         dangerRange: ValueRange? = nil,
         notes: String? = nil
+       
     ) {
         self.id = id
         self.name = name
@@ -73,6 +76,7 @@ struct OBDPID: Identifiable, Hashable, Codable {
         self.warningRange = warningRange
         self.dangerRange = dangerRange
         self.notes = notes
+        self.enabled = enabled
     }
 
     // MARK: - Derived Behavior
@@ -108,85 +112,128 @@ struct OBDPID: Identifiable, Hashable, Codable {
 struct OBDPIDLibrary {
     static let standard: [OBDPID] = [
         OBDPID(
+            enabled: true,
+            name: "Intake Air Temp (IAT)",
+            pid: OBDCommand.Mode1.intakeTemp,
+            formula: "A – 40",
+            units: "°C",
+            typicalRange: .init(min: -20, max: 100),
+            warningRange: .init(min: 50, max: 60),
+            dangerRange: .init(min: 60, max: 100),
+            notes: "Correlates with ambient and heat-soak."
+        ),
+        OBDPID(
+            enabled: true,
             name: "OBD Module Voltage",
             pid: OBDCommand.Mode1.controlModuleVoltage,
             formula: "((A*256)+B)/1000",
             units: "V",
-            typicalRange: .init(min: 11.5, max: 14.8),
-            warningRange: .init(min: 11.0, max: 15.2),
-            dangerRange: .init(min: 10.5, max: 15.5),
+            typicalRange: .init(min: 0, max: 18),
+            warningRange: .init(min: 0, max: 12),
+            dangerRange: .init(min: 15, max: 18),
             notes: "Battery/alternator voltage"
         ),
         OBDPID(
+            enabled: false,
             name: "Engine Coolant Temp",
             pid: OBDCommand.Mode1.coolantTemp,
             formula: "A - 40",
             units: "°C",
-            typicalRange: .init(min: 70, max: 105),
+            typicalRange: .init(min: 0, max: 130),
             warningRange: .init(min: 105, max: 115),
             dangerRange: .init(min: 115, max: 130),
             notes: "Subtract 40 offset"
         ),
         OBDPID(
+            enabled: false,
             name: "Engine RPM",
             pid: OBDCommand.Mode1.rpm,
             formula: "((A*256)+B)/4",
             units: "RPM",
-            typicalRange: .init(min: 600, max: 7000),
-            warningRange: .init(min: 7000, max: 7500),
+            typicalRange: .init(min: 0, max: 8500),
+            warningRange: .init(min: 6000, max: 7500),
             dangerRange: .init(min: 7500, max: 8500),
             notes: "Main tachometer source"
         ),
         OBDPID(
+            enabled: false,
             name: "Air-Fuel Ratio (λ)",
             pid: OBDCommand.Mode1.commandedEquivRatio,
             formula: "((A*256)+B)/32768",
             units: "λ",
-            typicalRange: .init(min: 0.8, max: 1.2),
-            warningRange: .init(min: 0.75, max: 1.25),
-            dangerRange: .init(min: 0.7, max: 1.3),
+            typicalRange: .init(min: 0.5, max: 2.0),
+            warningRange: nil,
+            dangerRange: nil,
             notes: "1.00 = stoich"
         ),
         OBDPID(
+            enabled: false,
             name: "Vehicle Speed",
             pid: OBDCommand.Mode1.speed,
             formula: "A",
-            units: "km/h / mph",
+            units: "km/h",
             typicalRange: .init(min: 0, max: 250),
             warningRange: nil,
             dangerRange: nil,
             notes: nil
         ),
         OBDPID(
+            enabled: false,
             name: "Engine Oil Temp",
             pid: OBDCommand.Mode1.engineOilTemp,
             formula: "A - 40",
-            units: "°C / °F",
-            typicalRange: .init(min: 60, max: 130),
+            units: "°C",
+            typicalRange: .init(min: 0, max: 160),
             warningRange: .init(min: 130, max: 140),
             dangerRange: .init(min: 140, max: 160),
             notes: "Optional PID"
         ),
         OBDPID(
+            enabled: false,
             name: "Fuel Pressure",
             pid: OBDCommand.Mode1.fuelPressure,
             formula: "A*3",
-            units: "kPa / psi",
-            typicalRange: .init(min: 240, max: 450),
-            warningRange: .init(min: 200, max: 500),
+            units: "kPa",
+            typicalRange: .init(min: 0, max: 765),
+            warningRange: nil,
             dangerRange: nil,
             notes: "Gauge fuel pressure"
         ),
 
         OBDPID(
+            enabled: false,
             name: "Catalyst Temp (Bank 1, Sensor 1)",
             pid: OBDCommand.Mode1.catalystTempB1S1,
             formula: "((A*256)+B)/10",
-            units: "°C / °F",
-            typicalRange: .init(min: 200, max: 900),
+            units: "°C",
+            typicalRange: .init(min: 0, max: 1000),
             warningRange: .init(min: 900, max: 950),
             dangerRange: .init(min: 950, max: 1000),
             notes: "Pre-cat temp"
+        ),
+        
+        OBDPID(
+            enabled: false,
+            name: "Throttle Position",
+            pid: OBDCommand.Mode1.throttlePos,
+            formula: "((A*256)+B)/10",
+            units: "%",
+            typicalRange: .init(min: 0, max: 100),
+            warningRange: nil,
+            dangerRange: nil,
+            notes: "accelerator"
+        ),
+        
+        OBDPID(
+            enabled: false,
+            name: "Ignition Timing",
+            pid: OBDCommand.Mode1.timingAdvance,
+            formula: "(A/2) – 64",
+            units: "° BTDC",
+            typicalRange: .init(min: 0, max: 45),
+            warningRange: nil,
+            dangerRange: nil,
+            notes: "timing"
         ),
     ]
 }

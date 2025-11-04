@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 54;
+	objectVersion = 60;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -17,9 +17,9 @@
 		CBAD9EB924A3E3DE00989CA4 /* CarSampleUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBAD9EB824A3E3DE00989CA4 /* CarSampleUITests.swift */; };
 		CBAD9EC824A3E3EB00989CA4 /* CarPlay.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CBAD9EC724A3E3EB00989CA4 /* CarPlay.framework */; };
 		CBAD9ECA24A3E3FE00989CA4 /* CarPlaySceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBAD9EC924A3E3FE00989CA4 /* CarPlaySceneDelegate.swift */; };
-		D43E33262EB93CD600752784 /* SwiftOBD2 in Frameworks */ = {isa = PBXBuildFile; productRef = D43E33252EB93CD600752784 /* SwiftOBD2 */; };
 		D43E332A2EB9568F00752784 /* ConfigData.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43E33292EB9568F00752784 /* ConfigData.swift */; };
 		D43E332D2EB9581400752784 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43E332C2EB9581400752784 /* SettingsView.swift */; };
+		D44B49D52EB9A2CA0062724B /* SwiftOBD2 in Frameworks */ = {isa = PBXBuildFile; productRef = D44B49D42EB9A2CA0062724B /* SwiftOBD2 */; };
 		D4A659F02EB95E5100E1A1C9 /* OBDConnectionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A659EF2EB95E4A00E1A1C9 /* OBDConnectionManager.swift */; };
 		D4C95C2C2EB904A300364CB6 /* OBDII.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4C95C2B2EB9049F00364CB6 /* OBDII.swift */; };
 		D4C95C302EB9352600364CB6 /* OBDIIPID.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4C95C2F2EB9352000364CB6 /* OBDIIPID.swift */; };
@@ -73,7 +73,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				CBAD9EC824A3E3EB00989CA4 /* CarPlay.framework in Frameworks */,
-				D43E33262EB93CD600752784 /* SwiftOBD2 in Frameworks */,
+				D44B49D52EB9A2CA0062724B /* SwiftOBD2 in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -251,7 +251,7 @@
 			);
 			mainGroup = CBAD9E8A24A3E3DD00989CA4;
 			packageReferences = (
-				D43E33242EB93CD600752784 /* XCRemoteSwiftPackageReference "SwiftOBD2" */,
+				D44B49D32EB9A2CA0062724B /* XCLocalSwiftPackageReference "../SwiftOBD2" */,
 			);
 			productRefGroup = CBAD9E9424A3E3DD00989CA4 /* Products */;
 			projectDirPath = "";
@@ -648,21 +648,16 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCRemoteSwiftPackageReference section */
-		D43E33242EB93CD600752784 /* XCRemoteSwiftPackageReference "SwiftOBD2" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "git@github.com:jamesmittlerii/SwiftOBD2.git";
-			requirement = {
-				branch = main;
-				kind = branch;
-			};
+/* Begin XCLocalSwiftPackageReference section */
+		D44B49D32EB9A2CA0062724B /* XCLocalSwiftPackageReference "../SwiftOBD2" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../SwiftOBD2;
 		};
-/* End XCRemoteSwiftPackageReference section */
+/* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		D43E33252EB93CD600752784 /* SwiftOBD2 */ = {
+		D44B49D42EB9A2CA0062724B /* SwiftOBD2 */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = D43E33242EB93CD600752784 /* XCRemoteSwiftPackageReference "SwiftOBD2" */;
 			productName = SwiftOBD2;
 		};
 /* End XCSwiftPackageProductDependency section */

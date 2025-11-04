@@ -15,8 +15,8 @@ import Combine
 
 func drawGaugeImage(for value: Double, size: CGSize = CPListImageRowItemElement.maximumImageSize) -> UIImage {
     // Clamp value to 0...20, then normalize to 0...1
-    let clamped = max(0.0, min(20.0, value))
-    let progress = CGFloat(clamped / 20.0)
+    let clamped = max(0.0, min(1.0, value))
+    let progress = CGFloat(clamped / 1.0)
 
     let format = UIGraphicsImageRendererFormat.default()
     format.opaque = false
@@ -113,6 +113,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate {
         
         // Subscribe to measurement updates to refresh the UI
         measurementCancellable = connectionManager.$latestMeasurements
+            .throttle(for: .seconds(1), scheduler: DispatchQueue.main, latest: true)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
                 self?.refreshSensorListIfVisible()
@@ -144,17 +145,15 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate {
 
         // Helper to get current value for a PID from the connection manager
         func currentValue(for pid: OBDPID) -> Double? {
-            let command = OBDCommand.mode1(pid.pid)
-            return connectionManager.latestMeasurements[command]?.value
+            return connectionManager.latestMeasurements[pid.pid]?.value
         }
 
         // Build one row element per sensor
         let rowElements: [CPListImageRowItemRowElement] = sensors.map { pid in
             let value = currentValue(for: pid) ?? pid.typicalRange.min
-            // Normalize value to 0...1 within the typical range, then map to 0...20 for our gauge drawer
+            // Normalize value to 0...1 within the typical range
             let normalized = pid.typicalRange.normalizedPosition(for: value)
-            let gaugeValue = normalized * 20.0
-            let image = drawGaugeImage(for: gaugeValue)
+            let image = drawGaugeImage(for: normalized)
 
             let subtitle: String = {
                 if let v = currentValue(for: pid) {
@@ -323,8 +322,8 @@ extension CarPlaySceneDelegate {
     // Sensor detail presenter
     @MainActor
     private func presentSensorTemplate(for pid: OBDPID) async {
-        let command = OBDCommand.mode1(pid.pid)
-        let current = connectionManager.latestMeasurements[command]?.value
+        let current = connectionManager.latestMeasurements[pid.pid]?.value
+        let stats = connectionManager.stats(for: pid.pid)
 
         var items: [CPInformationItem] = []
         if let current = current {
@@ -332,6 +331,13 @@ extension CarPlaySceneDelegate {
         } else {
             items.append(CPInformationItem(title: "Current", detail: "— \(pid.units)"))
         }
+
+        if let stats = stats {
+            items.append(CPInformationItem(title: "Min", detail: String(format: "%.2f %@", stats.min, pid.units)))
+            items.append(CPInformationItem(title: "Max", detail: String(format: "%.2f %@", stats.max, pid.units)))
+            items.append(CPInformationItem(title: "Samples", detail: "\(stats.sampleCount)"))
+        }
+
         items.append(CPInformationItem(title: "Units", detail: pid.units))
         items.append(CPInformationItem(title: "Formula", detail: pid.formula))
         items.append(CPInformationItem(title: "Typical Range", detail: String(format: "%.1f – %.1f %@", pid.typicalRange.min, pid.typicalRange.max, pid.units)))

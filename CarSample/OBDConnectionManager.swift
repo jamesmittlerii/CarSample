@@ -31,7 +31,27 @@ class OBDConnectionManager: ObservableObject {
     private let logger = Logger(subsystem: "com.CarSample", category: "OBDConnection")
 
     @Published var connectionState: ConnectionState = .disconnected
-    @Published private(set) var latestMeasurements: [OBDCommand: MeasurementResult] = [:]
+    @Published private(set) var latestMeasurements: [OBDCommand.Mode1: MeasurementResult] = [:]
+
+    // Track running min/max per PID
+    struct PIDStats: Equatable {
+        var min: Double
+        var max: Double
+        var sampleCount: Int
+
+        init(value: Double) {
+            self.min = value
+            self.max = value
+            self.sampleCount = 1
+        }
+
+        mutating func update(with value: Double) {
+            if value < min { min = value }
+            if value > max { max = value }
+            sampleCount &+= 1
+        }
+    }
+    @Published private(set) var pidStats: [OBDCommand.Mode1: PIDStats] = [:]
 
     private var obdService: OBDService
     private var cancellables = Set<AnyCancellable>()
@@ -82,14 +102,35 @@ class OBDConnectionManager: ObservableObject {
         obdService.stopConnection()
         cancellables.removeAll()
         latestMeasurements.removeAll()
+        pidStats.removeAll()
         connectionState = .disconnected
         logger.info("OBD-II disconnected.")
+    }
+
+    /// Reset min/max stats for all PIDs.
+    func resetAllStats() {
+        pidStats.removeAll()
+        logger.info("All PID stats reset.")
+    }
+
+    /// Reset min/max stats for a specific PID.
+    func resetStats(for pid: OBDCommand.Mode1) {
+        pidStats[pid] = nil
+        logger.info("PID stats reset for \(String(describing: pid)).")
+    }
+
+    /// Convenience accessor for a PID's stats.
+    func stats(for pid: OBDCommand.Mode1) -> PIDStats? {
+        pidStats[pid]
     }
 
     private func startContinuousOBDUpdates() {
         cancellables.removeAll()
 
         for pid in OBDPIDLibrary.standard {
+            if pid.enabled == false {
+                continue
+            }
             let command = OBDCommand.mode1(pid.pid)
             obdService
                 .startContinuousUpdates([command])
@@ -105,7 +146,17 @@ class OBDConnectionManager: ObservableObject {
                     receiveValue: { [weak self] measurements in
                         guard let self else { return }
                         for (cmd, result) in measurements {
-                            self.latestMeasurements[cmd] = result
+                            // Update latest measurement
+                            self.latestMeasurements[pid.pid] = result
+
+                            // Update min/max stats
+                            let value = result.value
+                            if var existing = self.pidStats[pid.pid] {
+                                existing.update(with: value)
+                                self.pidStats[pid.pid] = existing
+                            } else {
+                                self.pidStats[pid.pid] = PIDStats(value: value)
+                            }
                         }
                     }
                 )
