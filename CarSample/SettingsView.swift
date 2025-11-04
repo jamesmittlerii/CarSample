@@ -73,7 +73,7 @@ struct SettingsView: View {
         case .connected:
             Text("Connected")
                 .foregroundColor(.green)
-        case .failed(let error):
+        case .failed(_):
             Text("Failed")
                 .foregroundColor(.red)
                 // In a real app, you might show the 'error' string in an alert here
