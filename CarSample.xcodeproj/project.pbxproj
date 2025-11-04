@@ -23,6 +23,7 @@
 		D4A659F02EB95E5100E1A1C9 /* OBDConnectionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A659EF2EB95E4A00E1A1C9 /* OBDConnectionManager.swift */; };
 		D4C95C2C2EB904A300364CB6 /* OBDII.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4C95C2B2EB9049F00364CB6 /* OBDII.swift */; };
 		D4C95C302EB9352600364CB6 /* OBDIIPID.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4C95C2F2EB9352000364CB6 /* OBDIIPID.swift */; };
+		D4D0451A2EBA9FF600F80BCF /* SettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4D045192EBA9FF600F80BCF /* SettingsViewModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -65,6 +66,7 @@
 		D4A659EF2EB95E4A00E1A1C9 /* OBDConnectionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OBDConnectionManager.swift; sourceTree = "<group>"; };
 		D4C95C2B2EB9049F00364CB6 /* OBDII.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OBDII.swift; sourceTree = "<group>"; };
 		D4C95C2F2EB9352000364CB6 /* OBDIIPID.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OBDIIPID.swift; sourceTree = "<group>"; };
+		D4D045192EBA9FF600F80BCF /* SettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -132,6 +134,7 @@
 				CBAD9EA124A3E3DE00989CA4 /* LaunchScreen.storyboard */,
 				CBAD9EA424A3E3DE00989CA4 /* Info.plist */,
 				CBAD9ECB24A3E73800989CA4 /* CarSample.entitlements */,
+				D4D045192EBA9FF600F80BCF /* SettingsViewModel.swift */,
 			);
 			path = CarSample;
 			sourceTree = "<group>";
@@ -301,6 +304,7 @@
 				D4C95C2C2EB904A300364CB6 /* OBDII.swift in Sources */,
 				D43E332A2EB9568F00752784 /* ConfigData.swift in Sources */,
 				CBAD9E9724A3E3DD00989CA4 /* AppDelegate.swift in Sources */,
+				D4D0451A2EBA9FF600F80BCF /* SettingsViewModel.swift in Sources */,
 				D4A659F02EB95E5100E1A1C9 /* OBDConnectionManager.swift in Sources */,
 				CBAD9ECA24A3E3FE00989CA4 /* CarPlaySceneDelegate.swift in Sources */,
 				CBAD9E9924A3E3DD00989CA4 /* SceneDelegate.swift in Sources */,

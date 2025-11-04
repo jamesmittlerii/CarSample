@@ -9,16 +9,7 @@
 import SwiftUI
 
 struct SettingsView: View {
-    @ObservedObject var configData = ConfigData.shared
-    @ObservedObject var connectionManager = OBDConnectionManager.shared
-
-    // Formatter to ensure the port is entered as a number
-    private let numberFormatter: NumberFormatter = {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .none
-        formatter.allowsFloats = false
-        return formatter
-    }()
+    @StateObject private var viewModel = SettingsViewModel()
 
     var body: some View {
         NavigationView {
@@ -30,7 +21,7 @@ struct SettingsView: View {
                         statusTextView()
                     }
                     
-                    Toggle("Automatically Connect", isOn: $configData.autoConnectToOBD)
+                    Toggle("Automatically Connect", isOn: $viewModel.autoConnectToOBD)
                     
                     connectDisconnectButton()
                 }
@@ -39,7 +30,7 @@ struct SettingsView: View {
                     HStack {
                         Text("Host")
                         Spacer()
-                        TextField("e.g., 192.168.0.10", text: $configData.wifiHost)
+                        TextField("e.g., 192.168.0.10", text: $viewModel.wifiHost)
                             .keyboardType(.URL)
                             .autocapitalization(.none)
                             .disableAutocorrection(true)
@@ -49,21 +40,21 @@ struct SettingsView: View {
                     HStack {
                         Text("Port")
                         Spacer()
-                        TextField("e.g., 35000", value: $configData.wifiPort, formatter: numberFormatter)
+                        TextField("e.g., 35000", value: $viewModel.wifiPort, formatter: viewModel.numberFormatter)
                             .keyboardType(.numberPad)
                             .multilineTextAlignment(.trailing)
                     }
                 }
             }
             .navigationTitle("Settings")
-            .onChange(of: configData.wifiHost) { _, _ in connectionManager.updateConnectionDetails() }
-            .onChange(of: configData.wifiPort) { _, _ in connectionManager.updateConnectionDetails() }
+            // The .onChange modifiers are no longer needed here;
+            // the ViewModel handles this logic automatically.
         }
     }
     
     @ViewBuilder
     private func statusTextView() -> some View {
-        switch connectionManager.connectionState {
+        switch viewModel.connectionState {
         case .disconnected:
             Text("Disconnected")
                 .foregroundColor(.gray)
@@ -73,7 +64,7 @@ struct SettingsView: View {
         case .connected:
             Text("Connected")
                 .foregroundColor(.green)
-        case .failed(_):
+        case .failed(let error):
             Text("Failed")
                 .foregroundColor(.red)
                 // In a real app, you might show the 'error' string in an alert here
@@ -84,8 +75,8 @@ struct SettingsView: View {
     private func connectDisconnectButton() -> some View {
         HStack {
             Spacer()
-            Button(action: handleConnectionButtonTap) {
-                switch connectionManager.connectionState {
+            Button(action: viewModel.handleConnectionButtonTap) {
+                switch viewModel.connectionState {
                 case .disconnected, .failed:
                     Text("Connect")
                 case .connecting:
@@ -97,24 +88,8 @@ struct SettingsView: View {
                     Text("Disconnect")
                 }
             }
-            .disabled(connectionManager.connectionState == .connecting)
+            .disabled(viewModel.isConnectButtonDisabled)
             Spacer()
-        }
-    }
-    
-    private func handleConnectionButtonTap() {
-        switch connectionManager.connectionState {
-        case .connected:
-            connectionManager.disconnect()
-        case .disconnected, .failed:
-            // Ensure connection details are up-to-date before connecting
-            connectionManager.updateConnectionDetails()
-            Task {
-                await connectionManager.connect()
-            }
-        case .connecting:
-            // Button is disabled, so this case shouldn't be reached
-            break
         }
     }
 }
