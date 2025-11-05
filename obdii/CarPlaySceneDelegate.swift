@@ -24,7 +24,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate {
     
     // Tab Controllers
     private lazy var gaugesController = CarPlayGaugesController(connectionManager: self.connectionManager)
-    private lazy var diagnosticsController = CarPlayDiagnosticsController()
+    private lazy var diagnosticsController = CarPlayDiagnosticsController(connectionManager: self.connectionManager)
     private lazy var settingsController = CarPlaySettingsController()
     
     func templateApplicationScene(_ templateApplicationScene: CPTemplateApplicationScene,

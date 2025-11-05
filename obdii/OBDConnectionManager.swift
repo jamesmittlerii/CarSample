@@ -31,6 +31,7 @@ class OBDConnectionManager: ObservableObject {
     private let logger = Logger(subsystem: "com.rheosoft.obdii", category: "OBDConnection")
 
     @Published var connectionState: ConnectionState = .disconnected
+    @Published var troubleCodes: [TroubleCodeMetadata]  = []
 
     // Track latest/min/max per PID
     struct PIDStats: Equatable {
@@ -101,6 +102,10 @@ class OBDConnectionManager: ObservableObject {
 
         do {
             _ = try await obdService.startConnection()
+            let myTroubleCodes = try await obdService.scanForTroubleCodes()
+            if (myTroubleCodes[SwiftOBD2.ECUID.engine] != nil) {
+                troubleCodes = myTroubleCodes[SwiftOBD2.ECUID.engine]!
+            }
             connectionState = .connected
             logger.info("OBD-II connected successfully.")
             startContinuousOBDUpdates()

@@ -1,69 +1,149 @@
 import CarPlay
 import UIKit
+import SwiftOBD2
 
 @MainActor
 class CarPlayDiagnosticsController {
     private weak var interfaceController: CPInterfaceController?
+    private let connectionManager: OBDConnectionManager
+    
+    init(connectionManager: OBDConnectionManager) {
+        self.connectionManager = connectionManager
+    }
 
     func setInterfaceController(_ interfaceController: CPInterfaceController) {
         self.interfaceController = interfaceController
     }
 
-    /// Creates the root template for the Diagnostics tab.
+    // MARK: - Root Template
+
     func makeRootTemplate() -> CPListTemplate {
-        let items: [CPListItem] = [
-            {
-                let count = exampleOBDCodes.count
-                let statusText = count == 0 ? "No DTCs" : "\(count) Code\(count == 1 ? "" : "s")"
-                let item = CPListItem(text: "OBD-II Status", detailText: statusText)
+        let codes = connectionManager.troubleCodes
+
+        // No DTCs → single info row
+        if codes.isEmpty {
+            let item = CPListItem(text: "No Diagnostic Trouble Codes", detailText: nil)
+            let section = CPListSection(items: [item])
+            let template = CPListTemplate(title: "Diagnostics", sections: [section])
+            template.tabTitle = "Diagnostics"
+            template.tabImage = symbolImage(named: "wrench.and.screwdriver")
+            return template
+        }
+
+        // Group codes by severity
+        let grouped = Dictionary(grouping: codes, by: { $0.severity })
+
+        // Ordered severity buckets (Critical → Low)
+        let order: [CodeSeverity] = [.critical, .high, .moderate, .low]
+
+        let sections: [CPListSection] = order.compactMap { severity -> CPListSection? in
+            guard let list = grouped[severity] else { return nil }
+
+            let items: [CPListItem] = list.map { code in
+                let item = CPListItem(
+                    text: "\(code.code) • \(code.title)",
+                    detailText: code.severity.rawValue
+                )
+                item.setImage(
+                    tintedSymbol(
+                        named: imageName(for: code.severity),
+                        severity: code.severity
+                    )
+                )
                 item.handler = { [weak self] _, completion in
-                    guard let self else { completion(); return }
-                    let obdTemplate = self.makeOBDListTemplate(codes: exampleOBDCodes)
-                    self.interfaceController?.pushTemplate(obdTemplate, animated: true, completion: nil)
+                    self?.presentOBDDetail(for: code)
                     completion()
                 }
                 return item
-            }()
-        ]
-        let section = CPListSection(items: items)
-        let template = CPListTemplate(title: "Diagnostics", sections: [section])
+            }
+
+            return CPListSection(items: items,
+                                 header: severitySectionTitle(severity),
+                                 sectionIndexTitle: nil)
+        }
+
+        let template = CPListTemplate(title: "Diagnostics", sections: sections)
         template.tabTitle = "Diagnostics"
         template.tabImage = symbolImage(named: "wrench.and.screwdriver")
         return template
     }
 
-    private func makeOBDListTemplate(codes: [OBDCode]) -> CPListTemplate {
-        func imageName(for severity: OBDCode.Severity) -> String {
-            switch severity {
-            case .low: "exclamationmark.circle"
-            case .moderate: "exclamationmark.triangle"
-            case .high: "bolt.trianglebadge.exclamationmark"
-            case .critical: "xmark.octagon"
-            }
-        }
+    // MARK: - Detail Template
 
-        let items: [CPListItem] = codes.map { code in
-            let item = CPListItem(text: "\(code.code) • \(code.title)", detailText: code.severity.rawValue)
-            item.setImage(symbolImage(named: imageName(for: code.severity)))
-            item.handler = { [weak self] _, completion in
-                self?.presentOBDDetail(for: code)
-                completion()
-            }
-            return item
-        }
-
-        let section = CPListSection(items: items)
-        return CPListTemplate(title: "OBD-II Diagnostic Codes", sections: [section])
-    }
-
-    private func presentOBDDetail(for code: OBDCode) {
-        let items: [CPInformationItem] = [
+    private func presentOBDDetail(for code: TroubleCodeMetadata) {
+        var items: [CPInformationItem] = [
             CPInformationItem(title: "Code", detail: code.code),
             CPInformationItem(title: "Title", detail: code.title),
             CPInformationItem(title: "Severity", detail: code.severity.rawValue),
             CPInformationItem(title: "Description", detail: code.description)
         ]
-        let template = CPInformationTemplate(title: "DTC \(code.code)", layout: .twoColumn, items: items, actions: [])
+
+        if !code.causes.isEmpty {
+            let causesText = code.causes.map { "• \($0)" }.joined(separator: "\n")
+            items.append(CPInformationItem(title: "Potential Causes", detail: causesText))
+        }
+
+        if !code.remedies.isEmpty {
+            let remediesText = code.remedies.map { "• \($0)" }.joined(separator: "\n")
+            items.append(CPInformationItem(title: "Possible Remedies", detail: remediesText))
+        }
+
+        let template = CPInformationTemplate(
+            title: "DTC \(code.code)",
+            layout: .twoColumn,
+            items: items,
+            actions: []
+        )
         interfaceController?.pushTemplate(template, animated: true, completion: nil)
+    }
+
+    // MARK: - Helpers
+
+    private func symbolImage(named name: String) -> UIImage? {
+        return UIImage(systemName: name)
+    }
+
+    private func imageName(for severity: CodeSeverity) -> String {
+        switch severity {
+        case .low:       return "exclamationmark.circle"
+        case .moderate:  return "exclamationmark.triangle"
+        case .high:      return "bolt.trianglebadge.exclamationmark"
+        case .critical:  return "xmark.octagon"
+        }
+    }
+
+    private func severityColor(_ severity: CodeSeverity) -> UIColor {
+        switch severity {
+        case .low:
+            return .systemYellow
+        case .moderate:
+            return .systemOrange
+        case .high:
+            return .systemRed
+        case .critical:
+            return UIColor { traitCollection in
+                if traitCollection.userInterfaceStyle == .dark {
+                    // A brighter red for dark mode for better visibility
+                    return UIColor(red: 1.0, green: 0.3, blue: 0.25, alpha: 1.0)
+                } else {
+                    // The original dark red for light mode
+                    return UIColor(red: 0.85, green: 0.0, blue: 0.0, alpha: 1.0)
+                }
+            }
+        }
+    }
+
+    private func tintedSymbol(named name: String, severity: CodeSeverity) -> UIImage? {
+        guard let img = symbolImage(named: name) else { return nil }
+        return img.withTintColor(severityColor(severity), renderingMode: .alwaysOriginal)
+    }
+
+    private func severitySectionTitle(_ severity: CodeSeverity) -> String {
+        switch severity {
+        case .critical: return "Critical"
+        case .high:     return "High Severity"
+        case .moderate: return "Moderate"
+        case .low:      return "Low"
+        }
     }
 }
