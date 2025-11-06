@@ -167,7 +167,7 @@ class OBDConnectionManager: ObservableObject {
         }
 
         obdService
-            .startContinuousUpdates(commands,interval: 0.3)
+            .startContinuousUpdates(commands,interval: 2)
             .receive(on: DispatchQueue.main)
             .sink(
                 receiveCompletion: { [weak self] completion in
