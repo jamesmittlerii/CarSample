@@ -33,9 +33,7 @@ class OBDConnectionManager: ObservableObject {
     @Published var connectionState: ConnectionState = .disconnected
     @Published var troubleCodes: [TroubleCodeMetadata]  = []
 
-    // Track latest/min/max per PID
     struct PIDStats: Equatable {
-        // Separate logger for the nested type
         private static let logger = Logger(subsystem: "com.rheosoft.obdii", category: "OBDConnection.PIDStats")
 
         var pid: OBDCommand.Mode1
@@ -68,27 +66,29 @@ class OBDConnectionManager: ObservableObject {
     private var pidStoreCancellable: AnyCancellable?
 
     private init() {
-        //OBDLogger.shared.minimumLogLevel = .info
         self.obdService = OBDService(
             connectionType: .wifi,
             host: ConfigData.shared.wifiHost,
             port: UInt16(ConfigData.shared.wifiPort)
         )
 
-        // Observe changes to enabled PIDs and restart streaming if connected
+        // Observe changes to enabled PIDs and restart streaming if connected.
+        // Use Set for removeDuplicates to avoid order-based suppression,
+        // and pass the new enabled set into restart so we don't re-read stale state.
         pidStoreCancellable = PIDStore.shared.$pids
-            .map { pids in pids.filter { $0.enabled }.map { $0.pid } }
+            .map { pids -> Set<OBDCommand.Mode1> in
+                Set(pids.filter { $0.enabled }.map { $0.pid })
+            }
             .removeDuplicates()
-            .sink { [weak self] _ in
+            .sink { [weak self] enabledSet in
                 guard let self else { return }
                 if self.connectionState == .connected {
-                    self.logger.info("Enabled PID set changed, restarting continuous updates.")
-                    self.restartContinuousUpdates()
+                    self.logger.info("Enabled PID set changed (\(enabledSet.count)); restarting continuous updates.")
+                    self.restartContinuousUpdates(with: enabledSet)
                 }
             }
     }
 
-    /// Call this if connection details in `ConfigData` have changed.
     func updateConnectionDetails() {
         if connectionState != .disconnected {
             disconnect()
@@ -102,7 +102,6 @@ class OBDConnectionManager: ObservableObject {
     }
 
     func connect() async {
-        // Prevent multiple connection attempts
         guard connectionState == .disconnected || connectionState.isFailed else {
             logger.warning("Connection attempt ignored, already connected or connecting.")
             return
@@ -134,9 +133,7 @@ class OBDConnectionManager: ObservableObject {
         logger.info("OBD-II disconnected.")
     }
 
-    /// Reset min/max stats for all PIDs.
     func resetAllStats() {
-        // Keep latest values but reset min/max/sampleCount to start from latest
         pidStats = pidStats.mapValues { existing in
             var reset = existing
             reset.min = existing.latest.value
@@ -147,7 +144,6 @@ class OBDConnectionManager: ObservableObject {
         logger.info("All PID stats reset (min/max/sampleCount).")
     }
 
-    /// Reset min/max stats for a specific PID.
     func resetStats(for pid: OBDCommand.Mode1) {
         guard var existing = pidStats[pid] else { return }
         existing.min = existing.latest.value
@@ -157,7 +153,6 @@ class OBDConnectionManager: ObservableObject {
         logger.info("PID stats reset for \(String(describing: pid)).")
     }
 
-    /// Convenience accessor for a PID's stats.
     func stats(for pid: OBDCommand.Mode1) -> PIDStats? {
         pidStats[pid]
     }
@@ -165,17 +160,24 @@ class OBDConnectionManager: ObservableObject {
     private func startContinuousOBDUpdates() {
         cancellables.removeAll()
 
-        // Build commands from the user-configured enabled PIDs
-        let commands: [OBDCommand] = PIDStore.shared.enabledPIDs
-            .map { .mode1($0.pid) }
+        // Build commands from the current enabled PIDs in the store.
+        let enabledNow = Set(PIDStore.shared.enabledPIDs.map { $0.pid })
+        startContinuousOBDUpdates(with: enabledNow)
+    }
+
+    private func startContinuousOBDUpdates(with enabledPIDs: Set<OBDCommand.Mode1>) {
+        cancellables.removeAll()
+
+        let commands: [OBDCommand] = enabledPIDs.map { .mode1($0) }
 
         guard !commands.isEmpty else {
             logger.info("No enabled PIDs to monitor.")
             return
         }
 
+        logger.info("Starting continuous updates for \(commands.count) PIDs.")
         obdService
-            .startContinuousUpdates(commands,interval: 1)
+            .startContinuousUpdates(commands, interval: 1)
             .receive(on: DispatchQueue.main)
             .sink(
                 receiveCompletion: { [weak self] completion in
@@ -187,8 +189,9 @@ class OBDConnectionManager: ObservableObject {
                     guard let self else { return }
                     for (command, result) in measurements {
                         if case let .mode1(pid) = command {
-                            self.pidStats[pid, default: PIDStats(pid: pid, measurement: result)]
-                                .update(with: result)
+                            var stats = self.pidStats[pid] ?? PIDStats(pid: pid, measurement: result)
+                            stats.update(with: result)
+                            self.pidStats[pid] = stats
                         }
                     }
                 }
@@ -196,10 +199,10 @@ class OBDConnectionManager: ObservableObject {
             .store(in: &cancellables)
     }
 
-    private func restartContinuousUpdates() {
-        // Option A: Do not stop the underlying connection; just rebuild the stream.
+    private func restartContinuousUpdates(with enabledPIDs: Set<OBDCommand.Mode1>) {
+        // Rebuild the stream with the exact enabled set that changed.
         cancellables.removeAll()
-        startContinuousOBDUpdates()
+        startContinuousOBDUpdates(with: enabledPIDs)
     }
 }
 
