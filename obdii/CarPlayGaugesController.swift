@@ -85,7 +85,7 @@ class CarPlayGaugesController {
     // MARK: - Private Template Creation & Navigation
 
     private func makeGaugesSection() -> CPListSection {
-        let sensors = OBDPIDLibrary.standard
+        let sensors = OBDPIDLibrary.standard.filter { $0.enabled }
 
         func currentValue(for pid: OBDPID) -> Double? {
             return connectionManager.stats(for: pid.pid)?.latest.value

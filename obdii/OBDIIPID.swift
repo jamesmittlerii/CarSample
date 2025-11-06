@@ -178,7 +178,7 @@ struct OBDPIDLibrary {
             notes: nil
         ),
         OBDPID(
-            enabled: true,
+            enabled: false,
             name: "Engine Oil Temp",
             pid: OBDCommand.Mode1.engineOilTemp,
             formula: "A - 40",
