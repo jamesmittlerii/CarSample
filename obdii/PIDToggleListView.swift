@@ -7,7 +7,7 @@ struct PIDToggleListView: View {
         List {
             if store.pids.contains(where: { $0.enabled }) {
                 Section(header: Text("Enabled")) {
-                    ForEach(store.pids.filter { $0.enabled }) { pid in
+                    ForEach(store.enabledPIDs) { pid in
                         PIDToggleRow(
                             pid: pid,
                             isOn: Binding(
@@ -15,6 +15,9 @@ struct PIDToggleListView: View {
                                 set: { store.setEnabled($0, for: pid) }
                             )
                         )
+                    }
+                    .onMove { indices, newOffset in
+                        store.moveEnabled(fromOffsets: indices, toOffset: newOffset)
                     }
                 }
             }
