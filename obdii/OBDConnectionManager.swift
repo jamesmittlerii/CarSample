@@ -71,6 +71,8 @@ class OBDConnectionManager: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
 
     private init() {
+        
+        //OBDLogger.shared.minimumLogLevel = .info
         self.obdService = OBDService(
             connectionType: .wifi,
             host: ConfigData.shared.wifiHost,
@@ -101,7 +103,7 @@ class OBDConnectionManager: ObservableObject {
         connectionState = .connecting
 
         do {
-            _ = try await obdService.startConnection()
+            _ = try await obdService.startConnection(preferedProtocol: .protocol6)
             let myTroubleCodes = try await obdService.scanForTroubleCodes()
             if (myTroubleCodes[SwiftOBD2.ECUID.engine] != nil) {
                 troubleCodes = myTroubleCodes[SwiftOBD2.ECUID.engine]!
