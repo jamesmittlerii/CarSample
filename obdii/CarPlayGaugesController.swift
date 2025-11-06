@@ -10,8 +10,12 @@ fileprivate func drawGaugeImage(for pid: OBDPID, value: Double?, size: CGSize = 
     // Use provided value or fall back to the minimum of the typical range
     let actualValue = value ?? pid.typicalRange.min
 
-    // Normalize value to 0...1 within the typical range
-    let clampedNormalized = max(0.0, min(1.0, pid.typicalRange.normalizedPosition(for: actualValue)))
+    // Normalize value to 0...1 within the combined min/max across typical, warning, and danger ranges
+    let ranges: [ValueRange] = [pid.typicalRange, pid.warningRange, pid.dangerRange].compactMap { $0 }
+    let globalMin = ranges.map(\.min).min() ?? pid.typicalRange.min
+    let globalMax = ranges.map(\.max).max() ?? pid.typicalRange.max
+    let combinedRange = ValueRange(min: globalMin, max: globalMax)
+    let clampedNormalized = max(0.0, min(1.0, combinedRange.normalizedPosition(for: actualValue)))
 
     // Determine color for the current value and convert to UIColor
     let uiColor = UIColor(pid.color(for: actualValue))
@@ -85,7 +89,8 @@ class CarPlayGaugesController {
     // MARK: - Private Template Creation & Navigation
 
     private func makeGaugesSection() -> CPListSection {
-        let sensors = OBDPIDLibrary.standard.filter { $0.enabled }
+        // Use the live enabled PID list from the store so toggles reflect here
+        let sensors = PIDStore.shared.enabledPIDs
 
         func currentValue(for pid: OBDPID) -> Double? {
             return connectionManager.stats(for: pid.pid)?.latest.value

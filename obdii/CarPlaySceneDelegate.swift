@@ -21,6 +21,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate {
     // Models and Services
     private let connectionManager = OBDConnectionManager.shared
     private var measurementCancellable: AnyCancellable?
+    private var pidEnabledCancellable: AnyCancellable?   // NEW: observe enabled PID changes
     
     // Tab Controllers
     private lazy var gaugesController = CarPlayGaugesController(connectionManager: self.connectionManager)
@@ -62,10 +63,20 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate {
             .sink { [weak self] _ in
                 self?.gaugesController.refresh()
             }
+        
+        // NEW: Refresh gauges when the enabled PID set changes (e.g., toggled in Settings)
+        pidEnabledCancellable = PIDStore.shared.$pids
+            .map { pids in pids.filter { $0.enabled }.map { $0.id } }
+            .removeDuplicates()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.gaugesController.refresh()
+            }
     }
 
     func templateApplicationScene(_ templateApplicationScene: CPTemplateApplicationScene, didDisconnectInterfaceController interfaceController: CPInterfaceController) {
         self.interfaceController = nil
         measurementCancellable?.cancel()
+        pidEnabledCancellable?.cancel() // NEW: cancel the PID enabled subscription
     }
 }

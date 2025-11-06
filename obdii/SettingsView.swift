@@ -14,6 +14,12 @@ struct SettingsView: View {
     var body: some View {
         NavigationView {
             Form {
+                Section {
+                    NavigationLink("Gauges") {
+                        PIDToggleListView()
+                    }
+                }
+
                 Section(header: Text("Connection")) {
                     HStack {
                         Text("Status")
@@ -47,8 +53,6 @@ struct SettingsView: View {
                 }
             }
             .navigationTitle("Settings")
-            // The .onChange modifiers are no longer needed here;
-            // the ViewModel handles this logic automatically.
         }
     }
     
@@ -67,7 +71,6 @@ struct SettingsView: View {
         case .failed(_):
             Text("Failed")
                 .foregroundColor(.red)
-                // In a real app, you might show the 'error' string in an alert here
         }
     }
 

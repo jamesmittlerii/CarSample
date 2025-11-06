@@ -44,7 +44,7 @@ struct ValueRange: Hashable, Codable {
 /// Represents a single OBD-II Parameter ID (PID) definition.
 struct OBDPID: Identifiable, Hashable, Codable {
     let id: UUID
-    let enabled: Bool
+    var enabled: Bool
     let name: String
     let pid: OBDCommand.Mode1
     let formula: String
@@ -117,9 +117,9 @@ struct OBDPIDLibrary {
             pid: OBDCommand.Mode1.intakeTemp,
             formula: "A – 40",
             units: "°C",
-            typicalRange: .init(min: -20, max: 100),
+            typicalRange: .init(min: -40, max: 215),
             warningRange: .init(min: 50, max: 60),
-            dangerRange: .init(min: 60, max: 100),
+            dangerRange: .init(min: 60, max: 130),
             notes: "Correlates with ambient and heat-soak."
         ),
         OBDPID(
@@ -128,7 +128,7 @@ struct OBDPIDLibrary {
             pid: OBDCommand.Mode1.controlModuleVoltage,
             formula: "((A*256)+B)/1000",
             units: "V",
-            typicalRange: .init(min: 0, max: 18),
+            typicalRange: .init(min: 8, max: 16),
             warningRange: .init(min: 0, max: 12),
             dangerRange: .init(min: 15, max: 18),
             notes: "Battery/alternator voltage"
@@ -139,7 +139,7 @@ struct OBDPIDLibrary {
             pid: OBDCommand.Mode1.coolantTemp,
             formula: "A - 40",
             units: "°C",
-            typicalRange: .init(min: 0, max: 130),
+            typicalRange: .init(min: -40, max: 215),
             warningRange: .init(min: 105, max: 115),
             dangerRange: .init(min: 115, max: 130),
             notes: "Subtract 40 offset"
@@ -150,7 +150,7 @@ struct OBDPIDLibrary {
             pid: OBDCommand.Mode1.rpm,
             formula: "((A*256)+B)/4",
             units: "RPM",
-            typicalRange: .init(min: 0, max: 8500),
+            typicalRange: .init(min: 0, max: 8000),
             warningRange: .init(min: 6000, max: 7500),
             dangerRange: .init(min: 7500, max: 8500),
             notes: "Main tachometer source"
@@ -161,10 +161,10 @@ struct OBDPIDLibrary {
             pid: OBDCommand.Mode1.commandedEquivRatio,
             formula: "((A*256)+B)/32768",
             units: "λ",
-            typicalRange: .init(min: 0.5, max: 2.0),
+            typicalRange: .init(min: 0.7, max: 1.3),
             warningRange: nil,
             dangerRange: nil,
-            notes: "1.00 = stoich"
+            notes: "1.00 = stoich tick; AFR secondary scale handled elsewhere"
         ),
         OBDPID(
             enabled: false,
@@ -172,10 +172,10 @@ struct OBDPIDLibrary {
             pid: OBDCommand.Mode1.speed,
             formula: "A",
             units: "km/h",
-            typicalRange: .init(min: 0, max: 250),
+            typicalRange: .init(min: 0, max: 240),
             warningRange: nil,
             dangerRange: nil,
-            notes: nil
+            notes: "Conversion to mph handled elsewhere"
         ),
         OBDPID(
             enabled: false,
@@ -183,35 +183,33 @@ struct OBDPIDLibrary {
             pid: OBDCommand.Mode1.engineOilTemp,
             formula: "A - 40",
             units: "°C",
-            typicalRange: .init(min: 0, max: 160),
+            typicalRange: .init(min: -40, max: 215),
             warningRange: .init(min: 130, max: 140),
             dangerRange: .init(min: 140, max: 160),
             notes: "Optional PID"
         ),
         OBDPID(
             enabled: false,
-            name: "Fuel Pressure",
+            name: "Fuel Pressure (Gauge)",
             pid: OBDCommand.Mode1.fuelPressure,
             formula: "A*3",
             units: "kPa",
             typicalRange: .init(min: 0, max: 765),
             warningRange: nil,
             dangerRange: nil,
-            notes: "Gauge fuel pressure"
+            notes: "Legacy/gauge fuel pressure"
         ),
-
         OBDPID(
             enabled: false,
             name: "Catalyst Temp (Bank 1, Sensor 1)",
             pid: OBDCommand.Mode1.catalystTempB1S1,
             formula: "((A*256)+B)/10",
             units: "°C",
-            typicalRange: .init(min: 0, max: 1000),
+            typicalRange: .init(min: 200, max: 900),
             warningRange: .init(min: 900, max: 950),
             dangerRange: .init(min: 950, max: 1000),
-            notes: "Pre-cat temp"
+            notes: "Pre-cat temp; linear thermometer"
         ),
-        
         OBDPID(
             enabled: false,
             name: "Throttle Position",
@@ -221,19 +219,200 @@ struct OBDPIDLibrary {
             typicalRange: .init(min: 0, max: 100),
             warningRange: nil,
             dangerRange: nil,
-            notes: "accelerator"
+            notes: "Accelerator plate position"
         ),
-        
         OBDPID(
             enabled: false,
             name: "Ignition Timing",
             pid: OBDCommand.Mode1.timingAdvance,
             formula: "(A/2) – 64",
             units: "° BTDC",
-            typicalRange: .init(min: 0, max: 45),
+            typicalRange: .init(min: -10, max: 60),
             warningRange: nil,
             dangerRange: nil,
-            notes: "timing"
+            notes: "Center gauge at 0°, bipolar −10° to +60°"
+        ),
+
+        // MARK: - Added per earlier request
+
+        OBDPID(
+            enabled: false,
+            name: "Ambient Air Temp",
+            pid: OBDCommand.Mode1.ambientAirTemp,
+            formula: "A – 40",
+            units: "°C",
+            typicalRange: .init(min: -40, max: 215),
+            warningRange: nil,
+            dangerRange: nil,
+            notes: "Outside/ambient temperature"
+        ),
+        OBDPID(
+            enabled: false,
+            name: "Relative Throttle Position",
+            pid: OBDCommand.Mode1.relativeThrottlePos,
+            formula: "A * 100/255",
+            units: "%",
+            typicalRange: .init(min: 0, max: 100),
+            warningRange: nil,
+            dangerRange: nil,
+            notes: "Relative to learned min/max"
+        ),
+        OBDPID(
+            enabled: false,
+            name: "Engine Load",
+            pid: OBDCommand.Mode1.engineLoad,
+            formula: "A * 100/255",
+            units: "%",
+            typicalRange: .init(min: 0, max: 100),
+            warningRange: nil,
+            dangerRange: nil,
+            notes: "Calculated load"
+        ),
+        OBDPID(
+            enabled: false,
+            name: "Absolute Load",
+            pid: OBDCommand.Mode1.absoluteLoad,
+            formula: "A * 100/255",
+            units: "%",
+            typicalRange: .init(min: 0, max: 100),
+            warningRange: nil,
+            dangerRange: nil,
+            notes: "Absolute load value"
+        ),
+        OBDPID(
+            enabled: false,
+            name: "Fuel Level",
+            pid: OBDCommand.Mode1.fuelLevel,
+            formula: "A * 100/255",
+            units: "%",
+            typicalRange: .init(min: 0, max: 100),
+            warningRange: .init(min: 0, max: 10),
+            dangerRange: .init(min: 0, max: 5),
+            notes: "Tank level"
+        ),
+        OBDPID(
+            enabled: false,
+            name: "Barometric Pressure",
+            pid: OBDCommand.Mode1.barometricPressure,
+            formula: "A",
+            units: "kPa",
+            typicalRange: .init(min: 80, max: 105),
+            warningRange: nil,
+            dangerRange: nil,
+            notes: "Convert to inHg elsewhere if needed"
+        ),
+        OBDPID(
+            enabled: false,
+            name: "Intake Manifold Pressure (MAP)",
+            pid: OBDCommand.Mode1.intakePressure,
+            formula: "A",
+            units: "kPa",
+            typicalRange: .init(min: 20, max: 250),
+            warningRange: nil,
+            dangerRange: nil,
+            notes: "Boost can be derived vs baro"
+        ),
+        OBDPID(
+            enabled: false,
+            name: "Fuel Rail Pressure (Absolute)",
+            pid: OBDCommand.Mode1.fuelRailPressureAbs,
+            formula: "((A*256)+B) * 10",
+            units: "kPa",
+            typicalRange: .init(min: 0, max: 20000), // 0–20 MPa
+            warningRange: nil,
+            dangerRange: nil,
+            notes: "Display as MPa/PSI elsewhere if preferred"
+        ),
+        OBDPID(
+            enabled: false,
+            name: "Fuel Rail Pressure (Direct Injection)",
+            pid: OBDCommand.Mode1.fuelRailPressureDirect,
+            formula: "((A*256)+B) * 10",
+            units: "kPa",
+            typicalRange: .init(min: 0, max: 20000), // 0–20 MPa
+            warningRange: nil,
+            dangerRange: nil,
+            notes: "DI rail; convert to MPa/PSI elsewhere"
+        ),
+        OBDPID(
+            enabled: false,
+            name: "Fuel Rail Pressure (Vacuum Referenced)",
+            pid: OBDCommand.Mode1.fuelRailPressureVac,
+            formula: "((A*256)+B) * 0.079",
+            units: "kPa",
+            typicalRange: .init(min: 0, max: 700),
+            warningRange: nil,
+            dangerRange: nil,
+            notes: "Relative to manifold vacuum"
+        ),
+
+        // MARK: - Newly added per latest request
+
+        OBDPID(
+            enabled: false,
+            name: "Mass Air Flow (MAF)",
+            pid: OBDCommand.Mode1.maf,
+            formula: "((A*256)+B)/100",
+            units: "g/s",
+            typicalRange: .init(min: 0, max: 300),
+            warningRange: nil,
+            dangerRange: nil,
+            notes: "Wide range; linear bar reads well; scale by engine size"
+        ),
+        OBDPID(
+            enabled: false,
+            name: "Fuel Rate",
+            pid: OBDCommand.Mode1.fuelRate,
+            formula: "((A*256)+B)/20",
+            units: "L/h",
+            typicalRange: .init(min: 0, max: 50),
+            warningRange: nil,
+            dangerRange: nil,
+            notes: "Typical 0–50 L/h; tank/diesel may go higher"
+        ),
+        OBDPID(
+            enabled: false,
+            name: "Relative Accelerator Position",
+            pid: OBDCommand.Mode1.relativeAccelPos,
+            formula: "A * 100/255",
+            units: "%",
+            typicalRange: .init(min: 0, max: 100),
+            warningRange: nil,
+            dangerRange: nil,
+            notes: "Pedal position relative to calibrated range"
+        ),
+        OBDPID(
+            enabled: false,
+            name: "Catalyst Temp (Bank 2, Sensor 1)",
+            pid: OBDCommand.Mode1.catalystTempB2S1,
+            formula: "((A*256)+B)/10",
+            units: "°C",
+            typicalRange: .init(min: 200, max: 900),
+            warningRange: .init(min: 900, max: 950),
+            dangerRange: .init(min: 950, max: 1000),
+            notes: "Pre-cat temp; linear thermometer"
+        ),
+        OBDPID(
+            enabled: false,
+            name: "Catalyst Temp (Bank 1, Sensor 2)",
+            pid: OBDCommand.Mode1.catalystTempB1S2,
+            formula: "((A*256)+B)/10",
+            units: "°C",
+            typicalRange: .init(min: 200, max: 900),
+            warningRange: .init(min: 900, max: 950),
+            dangerRange: .init(min: 950, max: 1000),
+            notes: "Post-cat temp; linear thermometer"
+        ),
+        OBDPID(
+            enabled: false,
+            name: "Catalyst Temp (Bank 2, Sensor 2)",
+            pid: OBDCommand.Mode1.catalystTempB2S2,
+            formula: "((A*256)+B)/10",
+            units: "°C",
+            typicalRange: .init(min: 200, max: 900),
+            warningRange: .init(min: 900, max: 950),
+            dangerRange: .init(min: 950, max: 1000),
+            notes: "Post-cat temp; linear thermometer"
         ),
     ]
 }
