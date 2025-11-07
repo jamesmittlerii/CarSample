@@ -7,18 +7,11 @@ import UIKit   // For UIImage
 /// Draws a gauge-style ring image for a given PID value.
 /// This function is scoped to this file as it's only used for the gauges UI.
 fileprivate func drawGaugeImage(for pid: OBDPID, value: Double?, size: CGSize = CPListImageRowItemElement.maximumImageSize) -> UIImage {
-    // Use provided value or fall back to the minimum of the typical range
-    let actualValue = value ?? pid.typicalRange.min
-
-    // Normalize value to 0...1 within the combined min/max across typical, warning, and danger ranges
+    // Build a combined range so normalization (when needed) respects all defined ranges
     let ranges: [ValueRange] = [pid.typicalRange, pid.warningRange, pid.dangerRange].compactMap { $0 }
     let globalMin = ranges.map(\.min).min() ?? pid.typicalRange.min
     let globalMax = ranges.map(\.max).max() ?? pid.typicalRange.max
     let combinedRange = ValueRange(min: globalMin, max: globalMax)
-    let clampedNormalized = max(0.0, min(1.0, combinedRange.normalizedPosition(for: actualValue)))
-
-    // Determine color for the current value and convert to UIColor
-    let uiColor = UIColor(pid.color(for: actualValue))
 
     let format = UIGraphicsImageRendererFormat.default()
     format.opaque = false
@@ -37,12 +30,23 @@ fileprivate func drawGaugeImage(for pid: OBDPID, value: Double?, size: CGSize = 
         let sweepAngle: CGFloat = (4.0 / 3.0) * .pi
         let endAngle: CGFloat = startAngle + sweepAngle
 
-        // Background track
+        // Background track (always drawn)
         let trackPath = UIBezierPath(arcCenter: center, radius: radius, startAngle: startAngle, endAngle: endAngle, clockwise: true)
         trackPath.lineWidth = lineWidth
         trackPath.lineCapStyle = .round
         UIColor.systemGray3.setStroke()
         trackPath.stroke()
+
+        // If we don't have a value yet, stop here (draw only background track)
+        guard let actualValue = value else {
+            return
+        }
+
+        // Normalize/clamp the progress only when we have a real value
+        let clampedNormalized = max(0.0, min(1.0, combinedRange.normalizedPosition(for: actualValue)))
+
+        // Determine color for the current value and convert to UIColor
+        let uiColor = UIColor(pid.color(for: actualValue))
 
         // Progress arc
         let progressEndAngle = startAngle + (sweepAngle * CGFloat(clampedNormalized))
@@ -97,8 +101,9 @@ class CarPlayGaugesController {
         }
 
         let rowElements: [CPListImageRowItemRowElement] = sensors.map { pid in
-            let image = drawGaugeImage(for: pid, value: currentValue(for: pid))
-            let subtitle = (currentValue(for: pid).map { String(format: "%.1f %@", $0, pid.units) }) ?? "— \(pid.units)"
+            let value = currentValue(for: pid)
+            let image = drawGaugeImage(for: pid, value: value)
+            let subtitle = (value.map { String(format: "%.1f %@", $0, pid.units) }) ?? "— \(pid.units)"
             return CPListImageRowItemRowElement(image: image, title: pid.name, subtitle: subtitle)
         }
 
@@ -134,5 +139,11 @@ class CarPlayGaugesController {
 
         let template = CPInformationTemplate(title: pid.name, layout: .twoColumn, items: items, actions: [])
         interfaceController?.pushTemplate(template, animated: true, completion: nil)
+    }
+
+    // MARK: - Helpers
+
+    private func symbolImage(named name: String) -> UIImage? {
+        return UIImage(systemName: name)
     }
 }

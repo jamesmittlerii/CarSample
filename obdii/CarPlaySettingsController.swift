@@ -1,28 +1,68 @@
 import CarPlay
 import UIKit
+import SwiftOBD2
 
 @MainActor
 class CarPlaySettingsController {
     private weak var interfaceController: CPInterfaceController?
+    private var currentTemplate: CPListTemplate?
 
     func setInterfaceController(_ interfaceController: CPInterfaceController) {
         self.interfaceController = interfaceController
     }
+    
+    private func makeItem(_ text: String, detailText: String) -> CPListItem {
+        let item = CPListItem(text: text, detailText: detailText)
+        item.handler = { _, completion in completion() }
+        return item
+    }
+
+    private func makeUnitsItem() -> CPListItem {
+        let item = CPListItem(text: "Units", detailText: ConfigData.shared.units.rawValue)
+        item.handler = { [weak self] _, completion in
+            // Toggle units
+            ConfigData.shared.units = ConfigData.shared.units.next
+
+            // Update the UI: rebuild the section and update the template
+            self?.refreshSection()
+            completion()
+        }
+        return item
+    }
+
+    private func buildSection() -> CPListSection {
+        // Fetch app metadata
+        let bundle = Bundle.main
+        let displayName = bundle.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String
+            ?? bundle.object(forInfoDictionaryKey: "CFBundleName") as? String
+            ?? "App"
+        let version = bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "—"
+        let build = bundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "—"
+        let aboutTitle = "About"
+        let aboutDetail = "\(displayName) v\(version) build:\(build)"
+
+        // Items (Units has a custom handler; others are inert for now)
+        let items: [CPListItem] = [
+            makeUnitsItem(),
+            makeItem("Theme", detailText: "Automatic"),
+            makeItem(aboutTitle, detailText: aboutDetail)
+        ]
+        return CPListSection(items: items)
+    }
+
+    private func refreshSection() {
+        guard let template = currentTemplate else { return }
+        let section = buildSection()
+        template.updateSections([section])
+    }
 
     /// Creates the root template for the Settings tab.
     func makeRootTemplate() -> CPListTemplate {
-        let items: [CPListItem] = [
-            CPListItem(text: "Units", detailText: "Metric"),
-            CPListItem(text: "Theme", detailText: "Automatic"),
-            CPListItem(text: "About", detailText: "Version 1.0")
-        ]
-        // Add empty handlers for now
-        items.forEach { $0.handler = { _, completion in completion() } }
-        
-        let section = CPListSection(items: items)
+        let section = buildSection()
         let template = CPListTemplate(title: "Settings", sections: [section])
         template.tabTitle = "Settings"
-        template.tabImage = symbolImage(named: "gear")
+        template.tabImage = UIImage(systemName: "gear")
+        self.currentTemplate = template
         return template
     }
 }

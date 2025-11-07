@@ -177,7 +177,7 @@ class OBDConnectionManager: ObservableObject {
 
         logger.info("Starting continuous updates for \(commands.count) PIDs.")
         obdService
-            .startContinuousUpdates(commands, interval: 1)
+            .startContinuousUpdates(commands, unit: ConfigData.shared.units, interval: 1)
             .receive(on: DispatchQueue.main)
             .sink(
                 receiveCompletion: { [weak self] completion in
