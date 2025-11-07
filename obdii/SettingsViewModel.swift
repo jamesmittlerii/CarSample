@@ -1,6 +1,7 @@
 import Foundation
 import Combine
 import SwiftUI
+import SwiftOBD2
 
 @MainActor
 class SettingsViewModel: ObservableObject {
@@ -9,6 +10,7 @@ class SettingsViewModel: ObservableObject {
     @Published var wifiHost: String
     @Published var wifiPort: Int
     @Published var autoConnectToOBD: Bool
+    @Published var connectionType: ConnectionType
     @Published private(set) var connectionState: OBDConnectionManager.ConnectionState
 
     // MARK: - Private Model References
@@ -42,6 +44,7 @@ class SettingsViewModel: ObservableObject {
         self.wifiHost = configData.wifiHost
         self.wifiPort = configData.wifiPort
         self.autoConnectToOBD = configData.autoConnectToOBD
+        self.connectionType = configData.connectionType
         self.connectionState = connectionManager.connectionState
 
         // Set up subscriptions to propagate changes from models to ViewModel
@@ -62,21 +65,30 @@ class SettingsViewModel: ObservableObject {
 
         // 2. When ViewModel properties change, update the underlying models.
         // This creates a two-way flow: View -> ViewModel -> Model.
+
+        // Wi‑Fi host updates only matter when connection type is .wifi
         $wifiHost
-            .dropFirst() // Ignore the initial value
-            .debounce(for: .milliseconds(500), scheduler: RunLoop.main) // Avoid rapid updates
+            .dropFirst()
+            .debounce(for: .milliseconds(500), scheduler: RunLoop.main)
             .sink { [weak self] newHost in
-                self?.configData.wifiHost = newHost
-                self?.connectionManager.updateConnectionDetails()
+                guard let self else { return }
+                self.configData.wifiHost = newHost
+                if self.connectionType == .wifi {
+                    self.connectionManager.updateConnectionDetails()
+                }
             }
             .store(in: &cancellables)
 
+        // Wi‑Fi port updates only matter when connection type is .wifi
         $wifiPort
             .dropFirst()
             .debounce(for: .milliseconds(500), scheduler: RunLoop.main)
             .sink { [weak self] newPort in
-                self?.configData.wifiPort = newPort
-                self?.connectionManager.updateConnectionDetails()
+                guard let self else { return }
+                self.configData.wifiPort = newPort
+                if self.connectionType == .wifi {
+                    self.connectionManager.updateConnectionDetails()
+                }
             }
             .store(in: &cancellables)
 
@@ -84,6 +96,16 @@ class SettingsViewModel: ObservableObject {
             .dropFirst()
             .sink { [weak self] newSetting in
                 self?.configData.autoConnectToOBD = newSetting
+            }
+            .store(in: &cancellables)
+
+        // When connection type changes, persist and rebuild the OBDService
+        $connectionType
+            .dropFirst()
+            .sink { [weak self] newType in
+                guard let self else { return }
+                self.configData.connectionType = newType
+                self.connectionManager.updateConnectionDetails()
             }
             .store(in: &cancellables)
     }

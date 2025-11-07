@@ -7,6 +7,7 @@
 
 
 import SwiftUI
+import SwiftOBD2
 
 struct SettingsView: View {
     @StateObject private var viewModel = SettingsViewModel()
@@ -26,29 +27,37 @@ struct SettingsView: View {
                         Spacer()
                         statusTextView()
                     }
-                    
+
+                    Picker("Type", selection: $viewModel.connectionType) {
+                        ForEach(ConnectionType.allCases, id: \.self) { type in
+                            Text(type.rawValue).tag(type)
+                        }
+                    }
+
                     Toggle("Automatically Connect", isOn: $viewModel.autoConnectToOBD)
                     
                     connectDisconnectButton()
                 }
 
-                Section(header: Text("Connection Details")) {
-                    HStack {
-                        Text("Host")
-                        Spacer()
-                        TextField("e.g., 192.168.0.10", text: $viewModel.wifiHost)
-                            .keyboardType(.URL)
-                            .autocapitalization(.none)
-                            .disableAutocorrection(true)
-                            .multilineTextAlignment(.trailing)
-                    }
+                if viewModel.connectionType == .wifi {
+                    Section(header: Text("Connection Details")) {
+                        HStack {
+                            Text("Host")
+                            Spacer()
+                            TextField("e.g., 192.168.0.10", text: $viewModel.wifiHost)
+                                .keyboardType(.URL)
+                                .autocapitalization(.none)
+                                .disableAutocorrection(true)
+                                .multilineTextAlignment(.trailing)
+                        }
 
-                    HStack {
-                        Text("Port")
-                        Spacer()
-                        TextField("e.g., 35000", value: $viewModel.wifiPort, formatter: viewModel.numberFormatter)
-                            .keyboardType(.numberPad)
-                            .multilineTextAlignment(.trailing)
+                        HStack {
+                            Text("Port")
+                            Spacer()
+                            TextField("e.g., 35000", value: $viewModel.wifiPort, formatter: viewModel.numberFormatter)
+                                .keyboardType(.numberPad)
+                                .multilineTextAlignment(.trailing)
+                        }
                     }
                 }
             }
@@ -100,3 +109,4 @@ struct SettingsView: View {
 #Preview {
     SettingsView()
 }
+

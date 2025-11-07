@@ -67,7 +67,7 @@ class OBDConnectionManager: ObservableObject {
 
     private init() {
         self.obdService = OBDService(
-            connectionType: .wifi,
+            connectionType: ConfigData.shared.connectionType,
             host: ConfigData.shared.wifiHost,
             port: UInt16(ConfigData.shared.wifiPort)
         )
@@ -94,7 +94,7 @@ class OBDConnectionManager: ObservableObject {
             disconnect()
         }
         self.obdService = OBDService(
-            connectionType: .wifi,
+            connectionType: ConfigData.shared.connectionType,
             host: ConfigData.shared.wifiHost,
             port: UInt16(ConfigData.shared.wifiPort)
         )
@@ -110,7 +110,7 @@ class OBDConnectionManager: ObservableObject {
         connectionState = .connecting
 
         do {
-            _ = try await obdService.startConnection(preferedProtocol: .protocol6, querySupportedPIDs: false)
+            _ = try await obdService.startConnection(preferedProtocol: .protocol6, timeout: 30, querySupportedPIDs: false)
             let myTroubleCodes = try await obdService.scanForTroubleCodes()
             if (myTroubleCodes[SwiftOBD2.ECUID.engine] != nil) {
                 troubleCodes = myTroubleCodes[SwiftOBD2.ECUID.engine]!
@@ -215,3 +215,4 @@ extension OBDConnectionManager.ConnectionState {
         return false
     }
 }
+
