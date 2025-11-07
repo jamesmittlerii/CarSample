@@ -30,6 +30,35 @@ class CarPlaySettingsController {
         return item
     }
 
+    // New: Connection details item
+    private func makeConnectionDetailsItem() -> CPListItem {
+        let type = ConfigData.shared.connectionType
+        let typeText = type.rawValue
+
+        // Build a concise detail string depending on connection type
+        let detail: String
+        switch type {
+        case .demo:
+            detail = "Demo (no actual connection)"
+        case .wifi:
+            let host = ConfigData.shared.wifiHost
+            let port = ConfigData.shared.wifiPort
+            detail = "\(typeText) • \(host):\(port)"
+        case .bluetooth:
+            // If you have a selected peripheral name/identifier, append it here
+            detail = typeText
+        }
+
+        let item = CPListItem(text: "Connection", detailText: detail)
+        item.handler = { [weak self] _, completion in
+            // Nothing to push for now; simply complete.
+            // If desired, you could present a detail template here.
+            self?.refreshSection()
+            completion()
+        }
+        return item
+    }
+
     private func buildSection() -> CPListSection {
         // Fetch app metadata
         let bundle = Bundle.main
@@ -44,7 +73,7 @@ class CarPlaySettingsController {
         // Items (Units has a custom handler; others are inert for now)
         let items: [CPListItem] = [
             makeUnitsItem(),
-            makeItem("Theme", detailText: "Automatic"),
+            makeConnectionDetailsItem(),
             makeItem(aboutTitle, detailText: aboutDetail)
         ]
         return CPListSection(items: items)
