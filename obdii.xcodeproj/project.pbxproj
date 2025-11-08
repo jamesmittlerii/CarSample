@@ -22,7 +22,6 @@
 		D474B5932EBD21B300309D63 /* PIDStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = D474B5922EBD21B300309D63 /* PIDStore.swift */; };
 		D474B5952EBD21D200309D63 /* PIDToggleListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D474B5942EBD21D200309D63 /* PIDToggleListView.swift */; };
 		D4A659F02EB95E5100E1A1C9 /* OBDConnectionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A659EF2EB95E4A00E1A1C9 /* OBDConnectionManager.swift */; };
-		D4BDDB2C2EBB92FF0049DBA5 /* SwiftOBD2 in Frameworks */ = {isa = PBXBuildFile; productRef = D4BDDB2B2EBB92FF0049DBA5 /* SwiftOBD2 */; };
 		D4C95C2C2EB904A300364CB6 /* OBDII.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4C95C2B2EB9049F00364CB6 /* OBDII.swift */; };
 		D4C95C302EB9352600364CB6 /* OBDIIPID.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4C95C2F2EB9352000364CB6 /* OBDIIPID.swift */; };
 		D4D0451A2EBA9FF600F80BCF /* SettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4D045192EBA9FF600F80BCF /* SettingsViewModel.swift */; };
@@ -30,6 +29,7 @@
 		D4D0451E2EBAA13B00F80BCF /* CarPlayGaugesController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4D0451D2EBAA13B00F80BCF /* CarPlayGaugesController.swift */; };
 		D4D045202EBAA14000F80BCF /* CarPlayDiagnosticsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4D0451F2EBAA14000F80BCF /* CarPlayDiagnosticsController.swift */; };
 		D4D045222EBAA14100F80BCF /* CarPlaySettingsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4D045212EBAA14100F80BCF /* CarPlaySettingsController.swift */; };
+		D4D7C4932EBEBE0D00393ADF /* SwiftOBD2 in Frameworks */ = {isa = PBXBuildFile; productRef = D4D7C4922EBEBE0D00393ADF /* SwiftOBD2 */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -87,7 +87,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				CBAD9EC824A3E3EB00989CA4 /* CarPlay.framework in Frameworks */,
-				D4BDDB2C2EBB92FF0049DBA5 /* SwiftOBD2 in Frameworks */,
+				D4D7C4932EBEBE0D00393ADF /* SwiftOBD2 in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -272,7 +272,7 @@
 			);
 			mainGroup = CBAD9E8A24A3E3DD00989CA4;
 			packageReferences = (
-				D4BDDB2A2EBB92FF0049DBA5 /* XCRemoteSwiftPackageReference "SwiftOBD2" */,
+				D4D7C4912EBEBE0D00393ADF /* XCRemoteSwiftPackageReference "SwiftOBD2" */,
 			);
 			productRefGroup = CBAD9E9424A3E3DD00989CA4 /* Products */;
 			projectDirPath = "";
@@ -696,7 +696,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		D4BDDB2A2EBB92FF0049DBA5 /* XCRemoteSwiftPackageReference "SwiftOBD2" */ = {
+		D4D7C4912EBEBE0D00393ADF /* XCRemoteSwiftPackageReference "SwiftOBD2" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/jamesmittlerii/SwiftOBD2";
 			requirement = {
@@ -707,9 +707,9 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		D4BDDB2B2EBB92FF0049DBA5 /* SwiftOBD2 */ = {
+		D4D7C4922EBEBE0D00393ADF /* SwiftOBD2 */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = D4BDDB2A2EBB92FF0049DBA5 /* XCRemoteSwiftPackageReference "SwiftOBD2" */;
+			package = D4D7C4912EBEBE0D00393ADF /* XCRemoteSwiftPackageReference "SwiftOBD2" */;
 			productName = SwiftOBD2;
 		};
 /* End XCSwiftPackageProductDependency section */

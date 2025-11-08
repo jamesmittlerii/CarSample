@@ -2,6 +2,7 @@ import Foundation
 import SwiftOBD2
 import Combine
 import os.log
+import CoreBluetooth
 
 @MainActor
 class OBDConnectionManager: ObservableObject {
@@ -9,7 +10,7 @@ class OBDConnectionManager: ObservableObject {
         case disconnected
         case connecting
         case connected
-        case failed(String) // Using String for simple Equatable conformance
+        case failed(Error) // Using String for simple Equatable conformance
 
         static func == (lhs: OBDConnectionManager.ConnectionState, rhs: OBDConnectionManager.ConnectionState) -> Bool {
             switch (lhs, rhs) {
@@ -20,7 +21,7 @@ class OBDConnectionManager: ObservableObject {
             case (.connected, .connected):
                 return true
             case let (.failed(lError), .failed(rError)):
-                return lError == rError
+                return lError.localizedDescription == rError.localizedDescription
             default:
                 return false
             }
@@ -32,6 +33,8 @@ class OBDConnectionManager: ObservableObject {
 
     @Published var connectionState: ConnectionState = .disconnected
     @Published var troubleCodes: [TroubleCodeMetadata]  = []
+    // New: publish the connected peripheral name (Bluetooth), or nil for Wi‑Fi/Demo/none
+    @Published var connectedPeripheralName: String?
 
     struct PIDStats: Equatable {
         private static let logger = Logger(subsystem: "com.rheosoft.obdii", category: "OBDConnection.PIDStats")
@@ -72,6 +75,16 @@ class OBDConnectionManager: ObservableObject {
             port: UInt16(ConfigData.shared.wifiPort)
         )
 
+        // Mirror the connected peripheral name from OBDService
+        obdService.$connectedPeripheral
+            .map { $0?.name }
+            .removeDuplicates()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] name in
+                self?.connectedPeripheralName = name
+            }
+            .store(in: &cancellables)
+
         // Observe changes to enabled PIDs and restart streaming if connected.
         // Use Set for removeDuplicates to avoid order-based suppression,
         // and pass the new enabled set into restart so we don't re-read stale state.
@@ -98,6 +111,16 @@ class OBDConnectionManager: ObservableObject {
             host: ConfigData.shared.wifiHost,
             port: UInt16(ConfigData.shared.wifiPort)
         )
+        // Re-bind to the new service’s connectedPeripheral
+        obdService.$connectedPeripheral
+            .map { $0?.name }
+            .removeDuplicates()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] name in
+                self?.connectedPeripheralName = name
+            }
+            .store(in: &cancellables)
+
         logger.info("OBD Service re-initialized with new settings.")
     }
 
@@ -116,11 +139,14 @@ class OBDConnectionManager: ObservableObject {
                 troubleCodes = myTroubleCodes[SwiftOBD2.ECUID.engine]!
             }
             connectionState = .connected
+            // Set name immediately if available (Bluetooth). For Wi‑Fi/Demo, this remains nil.
+            connectedPeripheralName = obdService.connectedPeripheral?.name
             logger.info("OBD-II connected successfully.")
             startContinuousOBDUpdates()
         } catch {
             let errorMessage = error.localizedDescription
-            connectionState = .failed(errorMessage)
+            connectionState = .failed(error)
+            connectedPeripheralName = nil
             logger.error("OBD-II connection failed: \(errorMessage)")
         }
     }
@@ -129,6 +155,7 @@ class OBDConnectionManager: ObservableObject {
         obdService.stopConnection()
         cancellables.removeAll()
         pidStats.removeAll()
+        connectedPeripheralName = nil
         connectionState = .disconnected
         logger.info("OBD-II disconnected.")
     }
@@ -160,6 +187,16 @@ class OBDConnectionManager: ObservableObject {
     private func startContinuousOBDUpdates() {
         cancellables.removeAll()
 
+        // Re-establish mirror subscription after clearing cancellables
+        obdService.$connectedPeripheral
+            .map { $0?.name }
+            .removeDuplicates()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] name in
+                self?.connectedPeripheralName = name
+            }
+            .store(in: &cancellables)
+
         // Build commands from the current enabled PIDs in the store.
         let enabledNow = Set(PIDStore.shared.enabledPIDs.map { $0.pid })
         startContinuousOBDUpdates(with: enabledNow)
@@ -167,6 +204,16 @@ class OBDConnectionManager: ObservableObject {
 
     private func startContinuousOBDUpdates(with enabledPIDs: Set<OBDCommand.Mode1>) {
         cancellables.removeAll()
+
+        // Re-establish mirror subscription after clearing cancellables
+        obdService.$connectedPeripheral
+            .map { $0?.name }
+            .removeDuplicates()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] name in
+                self?.connectedPeripheralName = name
+            }
+            .store(in: &cancellables)
 
         let commands: [OBDCommand] = enabledPIDs.map { .mode1($0) }
 
@@ -205,6 +252,17 @@ class OBDConnectionManager: ObservableObject {
     private func restartContinuousUpdates(with enabledPIDs: Set<OBDCommand.Mode1>) {
         // Rebuild the stream with the exact enabled set that changed.
         cancellables.removeAll()
+
+        // Re-establish mirror subscription after clearing cancellables
+        obdService.$connectedPeripheral
+            .map { $0?.name }
+            .removeDuplicates()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] name in
+                self?.connectedPeripheralName = name
+            }
+            .store(in: &cancellables)
+
         startContinuousOBDUpdates(with: enabledPIDs)
     }
 }
@@ -215,4 +273,3 @@ extension OBDConnectionManager.ConnectionState {
         return false
     }
 }
-

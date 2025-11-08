@@ -1,14 +1,35 @@
 import CarPlay
 import UIKit
 import SwiftOBD2
+import Combine
+import Network
 
 @MainActor
 class CarPlaySettingsController {
     private weak var interfaceController: CPInterfaceController?
     private var currentTemplate: CPListTemplate?
+    //private var cancellable: AnyCancellable?
+    private var cancellables = Set<AnyCancellable>()
 
     func setInterfaceController(_ interfaceController: CPInterfaceController) {
         self.interfaceController = interfaceController
+
+        // Observe connection state changes to keep the UI in sync
+        OBDConnectionManager.shared.$connectionState
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.refreshSection()
+            }
+            .store(in: &cancellables)
+
+        // Observe connection type changes to keep the UI in sync
+        ConfigData.shared.$publishedConnectionType
+            .removeDuplicates()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.refreshSection()
+            }
+            .store(in: &cancellables)
     }
     
     private func makeItem(_ text: String, detailText: String) -> CPListItem {
@@ -39,24 +60,48 @@ class CarPlaySettingsController {
         let detail: String
         switch type {
         case .demo:
-            detail = "Demo (no actual connection)"
+            detail = "\(typeText) • no actual connection"
         case .wifi:
             let host = ConfigData.shared.wifiHost
             let port = ConfigData.shared.wifiPort
             detail = "\(typeText) • \(host):\(port)"
         case .bluetooth:
+            let name = OBDConnectionManager.shared.connectedPeripheralName ?? "unknown"
+            detail = "\(typeText) • \(name)"
             // If you have a selected peripheral name/identifier, append it here
-            detail = typeText
+           
         }
 
         let item = CPListItem(text: "Connection", detailText: detail)
         item.handler = { [weak self] _, completion in
             // Nothing to push for now; simply complete.
-            // If desired, you could present a detail template here.
             self?.refreshSection()
             completion()
         }
         return item
+    }
+    func errorName(_ error: Error) -> String {
+        return String(describing: type(of: error))
+    }
+
+    // New: Connection status item
+    private func makeConnectionStatusItem() -> CPListItem {
+        let state = OBDConnectionManager.shared.connectionState
+        let detail: String
+        switch state {
+        case .disconnected:
+            detail = "Disconnected"
+        case .connecting:
+            detail = "Connecting..."
+        case .connected:
+            detail = "Connected"
+        case .failed(let error):
+            // Keep it concise for CarPlay
+            
+            detail = "Failed: \(error.localizedDescription)"
+            
+        }
+        return makeItem("Connection Status", detailText: detail)
     }
 
     private func buildSection() -> CPListSection {
@@ -74,6 +119,7 @@ class CarPlaySettingsController {
         let items: [CPListItem] = [
             makeUnitsItem(),
             makeConnectionDetailsItem(),
+            makeConnectionStatusItem(),
             makeItem(aboutTitle, detailText: aboutDetail)
         ]
         return CPListSection(items: items)
@@ -95,3 +141,4 @@ class CarPlaySettingsController {
         return template
     }
 }
+
