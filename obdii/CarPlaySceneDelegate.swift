@@ -59,22 +59,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate {
             }
         }
         
-        // Subscribe to PID stats updates and notify the gauges controller to refresh
-        measurementCancellable = connectionManager.$pidStats
-            .throttle(for: .seconds(1), scheduler: DispatchQueue.main, latest: true)
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in
-                self?.gaugesController.refresh()
-            }
-        
-        // NEW: Refresh gauges when the enabled PID set changes (e.g., toggled in Settings)
-        pidEnabledCancellable = PIDStore.shared.$pids
-            .map { pids in pids.filter { $0.enabled }.map { $0.id } }
-            .removeDuplicates()
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in
-                self?.gaugesController.refresh()
-            }
+       
     }
 
     func templateApplicationScene(_ templateApplicationScene: CPTemplateApplicationScene, didDisconnectInterfaceController interfaceController: CPInterfaceController) {

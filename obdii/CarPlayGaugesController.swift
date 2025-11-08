@@ -62,33 +62,57 @@ fileprivate func drawGaugeImage(for pid: OBDPID, value: Double?, size: CGSize = 
 class CarPlayGaugesController {
     private weak var interfaceController: CPInterfaceController?
     private let connectionManager: OBDConnectionManager
-    private var sensorsListTemplate: CPListTemplate?
-
+    private var currentTemplate: CPListTemplate?
+    private var cancellables = Set<AnyCancellable>()
+    
     init(connectionManager: OBDConnectionManager) {
         self.connectionManager = connectionManager
     }
 
     func setInterfaceController(_ interfaceController: CPInterfaceController) {
         self.interfaceController = interfaceController
+        
+        // Subscribe to PID stats updates and notify the gauges controller to refresh
+        connectionManager.$pidStats
+            .throttle(for: .seconds(1), scheduler: DispatchQueue.main, latest: true)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.refreshSection()
+            }
+            .store(in: &cancellables)
+        
+        // NEW: Refresh gauges when the enabled PID set changes (e.g., toggled in Settings)
+         PIDStore.shared.$pids
+            .map { pids in pids.filter { $0.enabled }.map { $0.id } }
+            .removeDuplicates()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.refreshSection()
+            }
+            .store(in: &cancellables)
+        
+        
     }
 
     /// Creates the root template for the Gauges tab.
     func makeRootTemplate() -> CPListTemplate {
-        let section = makeGaugesSection()
-        let template = CPListTemplate(title: "Gauges", sections: [section])
+        let section = buildSections()
+        let template = CPListTemplate(title: "Gauges", sections: section)
         template.tabTitle = "Gauges"
         template.tabImage = symbolImage(named: "gauge")
 
-        self.sensorsListTemplate = template
+        self.currentTemplate = template
         return template
     }
 
-    /// Refreshes the gauges template with the latest data.
-    func refresh() {
-        guard let currentTemplate = sensorsListTemplate else { return }
-        let updatedSection = makeGaugesSection()
-        currentTemplate.updateSections([updatedSection])
+    private func refreshSection() {
+        guard let template = currentTemplate else { return }
+        let sections = buildSections()
+        template.updateSections(sections)
     }
+
+    
+   
     
     // MARK: - Private Template Creation & Navigation
 
@@ -99,7 +123,7 @@ class CarPlayGaugesController {
     }
     
     
-    private func makeGaugesSection() -> CPListSection {
+    private func buildSections() -> [CPListSection]  {
         // Use the live enabled PID list from the store so toggles reflect here
         let sensors = PIDStore.shared.enabledGauges
         
@@ -107,7 +131,7 @@ class CarPlayGaugesController {
         if sensors.isEmpty {
             let item = makeItem("No Enabled Gauges", detailText: nil)
             let section = CPListSection(items: [item])
-           return section
+           return [section]
         }
         
         
@@ -136,7 +160,7 @@ class CarPlayGaugesController {
             completion()
         }
 
-        return CPListSection(items: [item])
+        return [CPListSection(items: [item])]
     }
 
     private func presentSensorTemplate(for pid: OBDPID) {
