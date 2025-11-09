@@ -14,7 +14,7 @@ struct LogEntry: Codable, Sendable {
 }
 
 func collectLogs(since: TimeInterval = -300) async throws -> Data {
-    let subsystem = "com.swiftobd2.library"
+    let subsystem = "com.rheosoft.obdii"
     // 1. Open the log store for the current process
     let logStore = try OSLogStore(scope: .currentProcessIdentifier)
 
