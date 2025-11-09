@@ -253,6 +253,74 @@ struct OBDPIDLibrary {
             dangerRange: nil,
             notes: "Accelerator plate position"
         ),
+        // Newly added: Throttle Actuator Command
+        OBDPID(
+            enabled: false,
+            name: "Throttle Actuator Command",
+            pid: OBDCommand.Mode1.throttleActuator,
+            formula: "A * 100 / 255",
+            units: "%",
+            typicalRange: .init(min: 0, max: 100),
+            warningRange: nil,
+            dangerRange: nil,
+            notes: "ECU-commanded DBW throttle; compare vs TPS for tracking"
+        ),
+        // Newly added: Alternate Throttle Position Sensors (disabled gauges)
+        OBDPID(
+            enabled: false,
+            name: "Throttle Position B",
+            pid: OBDCommand.Mode1.throttlePosB,
+            formula: "A * 100 / 255",
+            units: "%",
+            typicalRange: .init(min: 0, max: 100),
+            warningRange: nil,
+            dangerRange: nil,
+            notes: "Alternate TPS track B"
+        ),
+        OBDPID(
+            enabled: false,
+            name: "Throttle Position C",
+            pid: OBDCommand.Mode1.throttlePosC,
+            formula: "A * 100 / 255",
+            units: "%",
+            typicalRange: .init(min: 0, max: 100),
+            warningRange: nil,
+            dangerRange: nil,
+            notes: "Alternate TPS track C"
+        ),
+        OBDPID(
+            enabled: false,
+            name: "Throttle Position D",
+            pid: OBDCommand.Mode1.throttlePosD,
+            formula: "A * 100 / 255",
+            units: "%",
+            typicalRange: .init(min: 0, max: 100),
+            warningRange: nil,
+            dangerRange: nil,
+            notes: "Alternate TPS track D"
+        ),
+        OBDPID(
+            enabled: false,
+            name: "Throttle Position E",
+            pid: OBDCommand.Mode1.throttlePosE,
+            formula: "A * 100 / 255",
+            units: "%",
+            typicalRange: .init(min: 0, max: 100),
+            warningRange: nil,
+            dangerRange: nil,
+            notes: "Alternate TPS track E"
+        ),
+        OBDPID(
+            enabled: false,
+            name: "Throttle Position F",
+            pid: OBDCommand.Mode1.throttlePosF,
+            formula: "A * 100 / 255",
+            units: "%",
+            typicalRange: .init(min: 0, max: 100),
+            warningRange: nil,
+            dangerRange: nil,
+            notes: "Alternate TPS track F"
+        ),
         OBDPID(
             enabled: false,
             name: "Ignition Timing",
@@ -531,6 +599,17 @@ struct OBDPIDLibrary {
         ),
         OBDPID(
             enabled: false,
+            name: "O₂ Sensor Wideband Current (Sensor 1)",
+            pid: OBDCommand.Mode1.O2Sensor1WRCurrent,
+            formula: "((A*256)+B - 32768) / 256",
+            units: "mA",
+            typicalRange: .init(min: -10, max: 10),
+            warningRange: nil,
+            dangerRange: nil,
+            notes: "Wideband current; verify scaling for your ECU"
+        ),
+        OBDPID(
+            enabled: false,
             name: "O₂ Sensor Wideband Current (Sensor 2)",
             pid: OBDCommand.Mode1.O2Sensor2WRCurrent,
             formula: "((A*256)+B - 32768) / 256",
@@ -575,6 +654,39 @@ struct OBDPIDLibrary {
         ),
         OBDPID(
             enabled: false,
+            name: "O₂ Sensor Voltage (Bank 1, Sensor 3)",
+            pid: OBDCommand.Mode1.O2Bank1Sensor3,
+            formula: "A / 200",
+            units: "V",
+            typicalRange: .init(min: 0.0, max: 1.0),
+            warningRange: nil,
+            dangerRange: nil,
+            notes: "Downstream O₂ sensor; narrowband typical 0–1 V"
+        ),
+        OBDPID(
+            enabled: false,
+            name: "O₂ Sensor Voltage (Bank 1, Sensor 4)",
+            pid: OBDCommand.Mode1.O2Bank1Sensor4,
+            formula: "A / 200",
+            units: "V",
+            typicalRange: .init(min: 0.0, max: 1.0),
+            warningRange: nil,
+            dangerRange: nil,
+            notes: "Downstream O₂ sensor; narrowband typical 0–1 V"
+        ),
+        OBDPID(
+            enabled: false,
+            name: "O₂ Sensor Voltage (Bank 2, Sensor 3)",
+            pid: OBDCommand.Mode1.O2Bank2Sensor3,
+            formula: "A / 200",
+            units: "V",
+            typicalRange: .init(min: 0.0, max: 1.0),
+            warningRange: nil,
+            dangerRange: nil,
+            notes: "Downstream O₂ sensor; narrowband typical 0–1 V"
+        ),
+        OBDPID(
+            enabled: false,
             name: "O₂ Sensors Present (Bitmap)",
             pid: OBDCommand.Mode1.O2Sensor,
             formula: "bitfield",
@@ -585,6 +697,70 @@ struct OBDPIDLibrary {
             notes: "Bitmask of O₂ sensors present; not a gauge",
             kind: .status
         ),
+
+        // MARK: - Newly added status entries
+
+        OBDPID(
+            enabled: false,
+            name: "Fuel Type",
+            pid: OBDCommand.Mode1.fuelType,
+            formula: "categorical",
+            units: "NA",
+            typicalRange: .init(min: 0, max: 255),
+            warningRange: nil,
+            dangerRange: nil,
+            notes: "Categorical: gasoline, diesel, etc.",
+            kind: .status
+        ),
+        OBDPID(
+            enabled: false,
+            name: "OBD Compliance",
+            pid: OBDCommand.Mode1.obdcompliance,
+            formula: "categorical",
+            units: "NA",
+            typicalRange: .init(min: 0, max: 255),
+            warningRange: nil,
+            dangerRange: nil,
+            notes: "OBD standard/version compliance",
+            kind: .status
+        ),
+        OBDPID(
+            enabled: false,
+            name: "Drive Cycle Status",
+            pid: OBDCommand.Mode1.statusDriveCycle,
+            formula: "bitfield",
+            units: "NA",
+            typicalRange: .init(min: 0, max: 0xFFFFFFFF),
+            warningRange: nil,
+            dangerRange: nil,
+            notes: "Monitors readiness for current drive cycle",
+            kind: .status
+        ),
+        OBDPID(
+            enabled: false,
+            name: "Freeze DTC",
+            pid: OBDCommand.Mode1.freezeDTC,
+            formula: "DTC",
+            units: "NA",
+            typicalRange: .init(min: 0, max: 0xFFFF),
+            warningRange: nil,
+            dangerRange: nil,
+            notes: "Stored DTC at time of freeze-frame capture",
+            kind: .status
+        ),
+        OBDPID(
+            enabled: false,
+            name: "Secondary Air Status",
+            pid: OBDCommand.Mode1.airStatus,
+            formula: "categorical",
+            units: "NA",
+            typicalRange: .init(min: 0, max: 255),
+            warningRange: nil,
+            dangerRange: nil,
+            notes: "Secondary air system status",
+            kind: .status
+        ),
+
         OBDPID(
             enabled: false,
             name: "EVAP System Vapor Pressure",
