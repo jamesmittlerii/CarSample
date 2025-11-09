@@ -19,6 +19,7 @@
 		CBAD9ECA24A3E3FE00989CA4 /* CarPlaySceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBAD9EC924A3E3FE00989CA4 /* CarPlaySceneDelegate.swift */; };
 		D43E332A2EB9568F00752784 /* ConfigData.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43E33292EB9568F00752784 /* ConfigData.swift */; };
 		D43E332D2EB9581400752784 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43E332C2EB9581400752784 /* SettingsView.swift */; };
+		D44A4B942EC14F7300DC076E /* Helpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = D44A4B932EC14F7100DC076E /* Helpers.swift */; };
 		D474B5932EBD21B300309D63 /* PIDStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = D474B5922EBD21B300309D63 /* PIDStore.swift */; };
 		D474B5952EBD21D200309D63 /* PIDToggleListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D474B5942EBD21D200309D63 /* PIDToggleListView.swift */; };
 		D4A659F02EB95E5100E1A1C9 /* OBDConnectionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A659EF2EB95E4A00E1A1C9 /* OBDConnectionManager.swift */; };
@@ -71,6 +72,7 @@
 		CBAD9ECB24A3E73800989CA4 /* obdii.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = obdii.entitlements; sourceTree = "<group>"; };
 		D43E33292EB9568F00752784 /* ConfigData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigData.swift; sourceTree = "<group>"; };
 		D43E332C2EB9581400752784 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		D44A4B932EC14F7100DC076E /* Helpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Helpers.swift; sourceTree = "<group>"; };
 		D474B5922EBD21B300309D63 /* PIDStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PIDStore.swift; sourceTree = "<group>"; };
 		D474B5942EBD21D200309D63 /* PIDToggleListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PIDToggleListView.swift; sourceTree = "<group>"; };
 		D4A659EF2EB95E4A00E1A1C9 /* OBDConnectionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OBDConnectionManager.swift; sourceTree = "<group>"; };
@@ -136,6 +138,7 @@
 		CBAD9E9524A3E3DD00989CA4 /* obdii */ = {
 			isa = PBXGroup;
 			children = (
+				D44A4B932EC14F7100DC076E /* Helpers.swift */,
 				D4A659EF2EB95E4A00E1A1C9 /* OBDConnectionManager.swift */,
 				D43E332C2EB9581400752784 /* SettingsView.swift */,
 				D43E33292EB9568F00752784 /* ConfigData.swift */,
@@ -324,6 +327,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				CBAD9E9B24A3E3DD00989CA4 /* ViewController.swift in Sources */,
+				D44A4B942EC14F7300DC076E /* Helpers.swift in Sources */,
 				D4D0451C2EBAA13000F80BCF /* CarPlayUtilities.swift in Sources */,
 				D4D7C4972EC00D6000393ADF /* CarPlayMILStatusController.swift in Sources */,
 				D43E332D2EB9581400752784 /* SettingsView.swift in Sources */,
