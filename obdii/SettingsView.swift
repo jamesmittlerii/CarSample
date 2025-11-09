@@ -5,20 +5,16 @@
 //  Created by cisstudent on 11/3/25.
 //
 
-
 import SwiftUI
 import SwiftOBD2
 #if canImport(UIKit)
 import UIKit
 #endif
-#if canImport(AppKit)
-import AppKit
-#endif
 
 struct SettingsView: View {
     @StateObject private var viewModel = SettingsViewModel()
 
-    // Share sheet state
+    // Share sheet state (iOS only)
     #if canImport(UIKit)
     @State private var isPresentingShare = false
     @State private var shareItems: [Any] = []
@@ -26,12 +22,18 @@ struct SettingsView: View {
     @State private var shareError: String?
     #endif
 
-    #if canImport(AppKit)
-    @State private var isGeneratingLogsMac = false
-    @State private var shareErrorMac: String?
-    // Anchor for NSSharingServicePicker
-    @State private var macShareAnchorFrame: CGRect = .zero
-    #endif
+    // Runtime detection: iOS app running on macOS (Designed for iPad) or Mac Catalyst
+    private var runningOnMac: Bool {
+        #if targetEnvironment(macCatalyst)
+        return true
+        #else
+        if #available(iOS 14.0, *) {
+            return ProcessInfo.processInfo.isiOSAppOnMac
+        } else {
+            return false
+        }
+        #endif
+    }
 
     var body: some View {
         NavigationView {
@@ -56,7 +58,7 @@ struct SettingsView: View {
                     }
 
                     Toggle("Automatically Connect", isOn: $viewModel.autoConnectToOBD)
-                    
+
                     connectDisconnectButton()
                 }
 
@@ -85,6 +87,8 @@ struct SettingsView: View {
                 Section(header: Text("Diagnostics")) {
                     #if canImport(UIKit)
                     Button {
+                        // If running on macOS (Designed for iPad or Catalyst), do nothing.
+                        if runningOnMac { return }
                         Task { await shareLogs_iOS() }
                     } label: {
                         if isGeneratingLogs {
@@ -96,19 +100,20 @@ struct SettingsView: View {
                             Text("Share Logs")
                         }
                     }
-                    .disabled(isGeneratingLogs)
+                    .disabled(isGeneratingLogs || runningOnMac)
                     .alert("Could not prepare logs", isPresented: .constant(shareError != nil), actions: {
                         Button("OK") { shareError = nil }
                     }, message: {
                         Text(shareError ?? "")
                     })
                     #else
-                    HStack {
+                    Button {
+                        // Non-UIKit platforms: unavailable
+                    } label: {
                         Text("Share Logs")
-                        Spacer()
-                        Text("Unavailable on this platform")
-                            .foregroundColor(.secondary)
                     }
+                    .disabled(true)
+                    .foregroundColor(.secondary)
                     .accessibilityHidden(true)
                     #endif
                 }
@@ -123,7 +128,7 @@ struct SettingsView: View {
             #endif
         }
     }
-    
+
     @ViewBuilder
     private func statusTextView() -> some View {
         switch viewModel.connectionState {
@@ -182,24 +187,6 @@ struct SettingsView: View {
     }
     #endif
 
-    // MARK: - Share Logs (AppKit)
-
-    #if canImport(AppKit)
-    private func shareLogs_mac(anchorView: NSView) async {
-        isGeneratingLogsMac = true
-        defer { isGeneratingLogsMac = false }
-
-        do {
-            let data = try await collectLogs(since: -300)
-            let tempURL = try writeToTemporaryFile(data: data, suggestedName: "SwiftOBD2-logs.json")
-            let picker = NSSharingServicePicker(items: [tempURL])
-            picker.show(relativeTo: anchorView.bounds, of: anchorView, preferredEdge: .minY)
-        } catch {
-            shareErrorMac = error.localizedDescription
-        }
-    }
-    #endif
-
     // MARK: - Common helper
 
     private func writeToTemporaryFile(data: Data, suggestedName: String) throws -> URL {
@@ -223,40 +210,6 @@ struct ShareSheet: UIViewControllerRepresentable {
     }
 
     func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) { }
-}
-#endif
-
-#if canImport(AppKit)
-// MARK: - macOS Share Logs Button
-
-private struct ShareLogsMacButton: NSViewRepresentable {
-    @Binding var isGenerating: Bool
-    @Binding var errorMessage: String?
-    let action: (NSView) -> Void
-
-    func makeNSView(context: Context) -> NSButton {
-        let button = NSButton(title: "Share Logs", target: context.coordinator, action: #selector(Coordinator.tapped))
-        button.bezelStyle = .rounded
-        return button
-    }
-
-    func updateNSView(_ nsView: NSButton, context: Context) {
-        nsView.isEnabled = !isGenerating
-        nsView.title = isGenerating ? "Preparing Logs…" : "Share Logs"
-    }
-
-    func makeCoordinator() -> Coordinator {
-        Coordinator(self)
-    }
-
-    class Coordinator: NSObject {
-        let parent: ShareLogsMacButton
-        init(_ parent: ShareLogsMacButton) { self.parent = parent }
-
-        @objc func tapped(_ sender: NSButton) {
-            parent.action(sender)
-        }
-    }
 }
 #endif
 
