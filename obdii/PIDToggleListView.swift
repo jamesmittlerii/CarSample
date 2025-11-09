@@ -6,7 +6,7 @@ struct PIDToggleListView: View {
     var body: some View {
         List {
             // Enabled section
-            let enabledIndices = store.pids.indices.filter { store.pids[$0].enabled }
+            let enabledIndices = store.pids.indices.filter { store.pids[$0].enabled && store.pids[$0].kind == .gauge}
             if !enabledIndices.isEmpty {
                 Section(header: Text("Enabled")) {
                     ForEach(enabledIndices, id: \.self) { index in
@@ -26,7 +26,7 @@ struct PIDToggleListView: View {
             }
 
             // Disabled section
-            let disabledIndices = store.pids.indices.filter { !store.pids[$0].enabled }
+            let disabledIndices = store.pids.indices.filter { !store.pids[$0].enabled && store.pids[$0].kind == .gauge}
             if !disabledIndices.isEmpty {
                 Section(header: Text("Disabled")) {
                     ForEach(disabledIndices, id: \.self) { index in

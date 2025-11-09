@@ -171,9 +171,9 @@ struct OBDPIDLibrary {
             pid: OBDCommand.Mode1.coolantTemp,
             formula: "A - 40",
             units: "°C",
-            typicalRange: .init(min: -20, max: 80),
-            warningRange: .init(min: 80, max: 100),
-            dangerRange: .init(min: 100, max: 150),
+            typicalRange: .init(min: -20, max: 98),
+            warningRange: .init(min: 98, max: 108),
+            dangerRange: .init(min: 108, max: 150),
             notes: "Subtract 40 offset"
         ),
         OBDPID(
@@ -215,9 +215,9 @@ struct OBDPIDLibrary {
             pid: OBDCommand.Mode1.engineOilTemp,
             formula: "A - 40",
             units: "°C",
-            typicalRange: .init(min: -20, max: 80),
-            warningRange: .init(min: 80, max: 100),
-            dangerRange: .init(min: 100, max: 150),
+            typicalRange: .init(min: -20, max: 98),
+            warningRange: .init(min: 98, max: 108),
+            dangerRange: .init(min: 108, max: 150),
             notes: "Optional PID"
         ),
         OBDPID(
