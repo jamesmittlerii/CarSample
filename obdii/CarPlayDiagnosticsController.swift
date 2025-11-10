@@ -118,7 +118,7 @@ class CarPlayDiagnosticsController {
             items: items,
             actions: []
         )
-        interfaceController?.pushTemplate(template, animated: true, completion: nil)
+        interfaceController?.pushTemplate(template, animated: false, completion: nil)
     }
 
     // MARK: - Helpers

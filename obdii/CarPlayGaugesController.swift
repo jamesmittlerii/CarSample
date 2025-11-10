@@ -163,10 +163,9 @@ class CarPlayGaugesController {
         return [CPListSection(items: [item])]
     }
 
-    private func presentSensorTemplate(for pid: OBDPID) {
-        let stats = connectionManager.stats(for: pid.pid)
+    private func makeSensorTemplate(for pid: OBDPID) -> CPInformationTemplate {
         var items: [CPInformationItem] = []
-
+        let stats = connectionManager.stats(for: pid.pid)
         items.append(CPInformationItem(title: "Current", detail: (stats.map { String(format: "%.2f %@", $0.latest.value, pid.units!) }) ?? "— \(pid.units!)"))
         if let stats = stats {
             items.append(CPInformationItem(title: "Min", detail: String(format: "%.2f %@", stats.min, pid.units!)))
@@ -177,8 +176,15 @@ class CarPlayGaugesController {
         items.append(CPInformationItem(title: "Units", detail: pid.units!))
         items.append(CPInformationItem(title: "Typical Range", detail: String(format: "%.1f – %.1f %@", pid.typicalRange!.min, pid.typicalRange!.max, pid.units!)))
 
-        let template = CPInformationTemplate(title: pid.name, layout: .twoColumn, items: items, actions: [])
-        interfaceController?.pushTemplate(template, animated: true, completion: nil)
+        return CPInformationTemplate(title: pid.name, layout: .twoColumn, items: items, actions: [])
+    }
+    
+    
+    private func presentSensorTemplate(for pid: OBDPID) {
+        
+
+        let template = makeSensorTemplate(for: pid)
+        interfaceController?.pushTemplate(template, animated: false, completion: nil)
     }
 
     // MARK: - Helpers
