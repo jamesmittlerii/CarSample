@@ -66,6 +66,11 @@ class CarPlayGaugesController {
     private var sensorItems: [CPInformationItem] = []
     private var cancellables = Set<AnyCancellable>()
     
+    // Detail screen live update state
+    private var currentDetailPID: OBDPID?
+    private var currentInfoTemplate: CPInformationTemplate?
+    private var currentDetailCancellable: AnyCancellable?
+    
     init(connectionManager: OBDConnectionManager) {
         self.connectionManager = connectionManager
     }
@@ -83,7 +88,7 @@ class CarPlayGaugesController {
             .store(in: &cancellables)
         
         // NEW: Refresh gauges when the enabled PID set changes (e.g., toggled in Settings)
-         PIDStore.shared.$pids
+        PIDStore.shared.$pids
             .map { pids in pids.filter { $0.enabled }.map { $0.id } }
             .removeDuplicates()
             .receive(on: DispatchQueue.main)
@@ -91,8 +96,6 @@ class CarPlayGaugesController {
                 self?.refreshSection()
             }
             .store(in: &cancellables)
-        
-        
     }
 
     /// Creates the root template for the Gauges tab.
@@ -112,9 +115,6 @@ class CarPlayGaugesController {
         template.updateSections(sections)
     }
 
-    
-   
-    
     // MARK: - Private Template Creation & Navigation
 
     private func makeItem(_ text: String, detailText: String?) -> CPListItem {
@@ -122,7 +122,6 @@ class CarPlayGaugesController {
         item.handler = { _, completion in completion() }
         return item
     }
-    
     
     private func buildSections() -> [CPListSection]  {
         // Use the live enabled PID list from the store so toggles reflect here
@@ -132,10 +131,8 @@ class CarPlayGaugesController {
         if sensors.isEmpty {
             let item = makeItem("No Enabled Gauges", detailText: nil)
             let section = CPListSection(items: [item])
-           return [section]
+            return [section]
         }
-        
-        
 
         func currentValue(for pid: OBDPID) -> Double? {
             return connectionManager.stats(for: pid.pid)?.latest.value
@@ -180,14 +177,35 @@ class CarPlayGaugesController {
         sensorItems = items
     }
     
-    
     private func presentSensorTemplate(for pid: OBDPID) {
+        // Cancel any previous detail subscription
+        currentDetailCancellable?.cancel()
+        currentDetailCancellable = nil
+        currentDetailPID = pid
+        currentInfoTemplate = nil
         
         updateSensorItems(for: pid)
         let template = CPInformationTemplate(title: pid.name, layout: .twoColumn, items: sensorItems, actions: [])
+        currentInfoTemplate = template
 
-       
         interfaceController?.pushTemplate(template, animated: false, completion: nil)
+        
+        // Live updates for this PID: update items in place
+        currentDetailCancellable = connectionManager.$pidStats
+            .compactMap { statsDict -> OBDConnectionManager.PIDStats? in
+                statsDict[pid.pid]
+            }
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                guard let self,
+                      let infoTemplate = self.currentInfoTemplate,
+                      let currentPID = self.currentDetailPID
+                else { return }
+                
+                // Rebuild items and assign to the template
+                self.updateSensorItems(for: currentPID)
+                infoTemplate.items = self.sensorItems
+            }
     }
 
     // MARK: - Helpers
