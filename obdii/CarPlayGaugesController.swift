@@ -63,6 +63,7 @@ class CarPlayGaugesController {
     private weak var interfaceController: CPInterfaceController?
     private let connectionManager: OBDConnectionManager
     private var currentTemplate: CPListTemplate?
+    private var sensorItems: [CPInformationItem] = []
     private var cancellables = Set<AnyCancellable>()
     
     init(connectionManager: OBDConnectionManager) {
@@ -163,7 +164,7 @@ class CarPlayGaugesController {
         return [CPListSection(items: [item])]
     }
 
-    private func makeSensorTemplate(for pid: OBDPID) -> CPInformationTemplate {
+    private func updateSensorItems(for pid: OBDPID)  {
         var items: [CPInformationItem] = []
         let stats = connectionManager.stats(for: pid.pid)
         items.append(CPInformationItem(title: "Current", detail: (stats.map { String(format: "%.2f %@", $0.latest.value, pid.units!) }) ?? "— \(pid.units!)"))
@@ -176,14 +177,16 @@ class CarPlayGaugesController {
         items.append(CPInformationItem(title: "Units", detail: pid.units!))
         items.append(CPInformationItem(title: "Typical Range", detail: String(format: "%.1f – %.1f %@", pid.typicalRange!.min, pid.typicalRange!.max, pid.units!)))
 
-        return CPInformationTemplate(title: pid.name, layout: .twoColumn, items: items, actions: [])
+        sensorItems = items
     }
     
     
     private func presentSensorTemplate(for pid: OBDPID) {
         
+        updateSensorItems(for: pid)
+        let template = CPInformationTemplate(title: pid.name, layout: .twoColumn, items: sensorItems, actions: [])
 
-        let template = makeSensorTemplate(for: pid)
+       
         interfaceController?.pushTemplate(template, animated: false, completion: nil)
     }
 
