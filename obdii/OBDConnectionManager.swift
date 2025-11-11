@@ -47,13 +47,13 @@ class OBDConnectionManager: ObservableObject {
     struct PIDStats: Equatable {
         private static let logger = Logger(subsystem: "com.rheosoft.obdii", category: "OBDConnection.PIDStats")
 
-        var pid: OBDCommand.Mode1
+        var pid: OBDCommand
         var latest: MeasurementResult
         var min: Double
         var max: Double
         var sampleCount: Int
 
-        init(pid: OBDCommand.Mode1, measurement: MeasurementResult) {
+        init(pid: OBDCommand, measurement: MeasurementResult) {
             self.pid = pid
             self.latest = measurement
             self.min = measurement.value
@@ -70,7 +70,7 @@ class OBDConnectionManager: ObservableObject {
         }
     }
 
-    @Published private(set) var pidStats: [OBDCommand.Mode1: PIDStats] = [:]
+    @Published private(set) var pidStats: [OBDCommand: PIDStats] = [:]
 
     private var obdService: OBDService
     private var cancellables = Set<AnyCancellable>()
@@ -97,7 +97,7 @@ class OBDConnectionManager: ObservableObject {
         // Use Set for removeDuplicates to avoid order-based suppression,
         // and pass the new enabled set into restart so we don't re-read stale state.
         pidStoreCancellable = PIDStore.shared.$pids
-            .map { pids -> Set<OBDCommand.Mode1> in
+            .map { pids -> Set<OBDCommand> in
                 Set(pids.filter { $0.enabled }.map { $0.pid })
             }
             .removeDuplicates()
@@ -194,7 +194,7 @@ class OBDConnectionManager: ObservableObject {
         logger.info("All PID stats reset (min/max/sampleCount).")
     }
 
-    func resetStats(for pid: OBDCommand.Mode1) {
+    func resetStats(for pid: OBDCommand) {
         guard var existing = pidStats[pid] else { return }
         existing.min = existing.latest.value
         existing.max = existing.latest.value
@@ -203,7 +203,7 @@ class OBDConnectionManager: ObservableObject {
         logger.info("PID stats reset for \(String(describing: pid)).")
     }
 
-    func stats(for pid: OBDCommand.Mode1) -> PIDStats? {
+    func stats(for pid: OBDCommand) -> PIDStats? {
         pidStats[pid]
     }
 
@@ -227,16 +227,16 @@ class OBDConnectionManager: ObservableObject {
         startContinuousOBDUpdates(with: enabledNow)
     }
 
-    private func startContinuousOBDUpdates(with enabledPIDs: Set<OBDCommand.Mode1>) {
+    private func startContinuousOBDUpdates(with enabledPIDs: Set<OBDCommand>) {
         cancellables.removeAll()
         
         var enabledNow = enabledPIDs
         if (querySupportedPids == true)
         {
             // Filter out any enabled PIDs that are not supported by the vehicle/adapter
-            let supportedMode1: Set<OBDCommand.Mode1> = Set(
+            let supportedMode1: Set<OBDCommand> = Set(
                 supportedPids.compactMap { cmd in
-                    if case let .mode1(m) = cmd { return m }
+                    if case let .mode1(m) = cmd { return .mode1(m) }
                     return nil
                 }
             )
@@ -267,7 +267,8 @@ class OBDConnectionManager: ObservableObject {
             }
             .store(in: &cancellables)
 
-        let commands: [OBDCommand] = enabledNow.map { .mode1($0) }
+        // FIX: enabledNow is already Set<OBDCommand>, do not wrap again
+        let commands: [OBDCommand] = Array(enabledNow)
 
         guard !commands.isEmpty else {
             logger.info("No enabled PIDs to monitor.")
@@ -297,10 +298,11 @@ class OBDConnectionManager: ObservableObject {
                             self.MILStatus = decode.statusResult!
                         default:
                             guard let measurement = decode.measurementResult else { continue }
-
-                            var stats = self.pidStats[pid] ?? PIDStats(pid: pid, measurement: measurement)
+                            // Wrap Mode1 back into OBDCommand for stats key and PIDStats
+                            let key: OBDCommand = .mode1(pid)
+                            var stats = self.pidStats[key] ?? PIDStats(pid: key, measurement: measurement)
                             stats.update(with: measurement)
-                            self.pidStats[pid] = stats
+                            self.pidStats[key] = stats
                         }
                         
                         // Only handle measurement results
@@ -311,7 +313,7 @@ class OBDConnectionManager: ObservableObject {
             .store(in: &cancellables)
     }
 
-    private func restartContinuousUpdates(with enabledPIDs: Set<OBDCommand.Mode1>) {
+    private func restartContinuousUpdates(with enabledPIDs: Set<OBDCommand>) {
         // Rebuild the stream with the exact enabled set that changed.
         cancellables.removeAll()
 

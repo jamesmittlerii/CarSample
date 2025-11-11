@@ -51,7 +51,7 @@ struct OBDPID: Identifiable, Hashable, Codable {
     let id: UUID
     var enabled: Bool
     let name: String
-    let pid: OBDCommand.Mode1
+    let pid: OBDCommand
     let formula: String?
     let units: String?
     let typicalRange: ValueRange?
@@ -64,7 +64,7 @@ struct OBDPID: Identifiable, Hashable, Codable {
         id: UUID = UUID(),
         enabled: Bool = false,
         name: String,
-        pid: OBDCommand.Mode1,
+        pid: OBDCommand,
         formula: String? = nil,
         units: String,
         typicalRange: ValueRange,
@@ -122,7 +122,7 @@ struct OBDPIDLibrary {
         OBDPID(
             enabled: true,
             name: "Fuel System Status",
-            pid: OBDCommand.Mode1.fuelStatus,
+            pid: .mode1(.fuelStatus),
             //formula: "A – 40",
             units: "NA",
             typicalRange: .init(min: 0, max: 100),
@@ -134,7 +134,7 @@ struct OBDPIDLibrary {
         OBDPID(
             enabled: true,
             name: "MIL Status",
-            pid: OBDCommand.Mode1.status,
+            pid: .mode1(.status),
             //formula: "A – 40",
             units: "NA",
             typicalRange: .init(min: 0, max: 100),
@@ -146,7 +146,7 @@ struct OBDPIDLibrary {
         OBDPID(
             enabled: true,
             name: "Intake Air Temp (IAT)",
-            pid: OBDCommand.Mode1.intakeTemp,
+            pid: .mode1(.intakeTemp),
             formula: "A – 40",
             units: "°C",
             typicalRange: .init(min: -20, max: 80),
@@ -157,7 +157,7 @@ struct OBDPIDLibrary {
         OBDPID(
             enabled: true,
             name: "OBD Module Voltage",
-            pid: OBDCommand.Mode1.controlModuleVoltage,
+            pid: .mode1(.controlModuleVoltage),
             formula: "((A*256)+B)/1000",
             units: "V",
             typicalRange: .init(min: 8, max: 16),
@@ -168,7 +168,7 @@ struct OBDPIDLibrary {
         OBDPID(
             enabled: true,
             name: "Engine Coolant Temp",
-            pid: OBDCommand.Mode1.coolantTemp,
+            pid: .mode1(.coolantTemp),
             formula: "A - 40",
             units: "°C",
             typicalRange: .init(min: -20, max: 98),
@@ -179,7 +179,7 @@ struct OBDPIDLibrary {
         OBDPID(
             enabled: true,
             name: "Engine RPM",
-            pid: OBDCommand.Mode1.rpm,
+            pid: .mode1(.rpm),
             formula: "((A*256)+B)/4",
             units: "RPM",
             typicalRange: .init(min: 0, max: 8000),
@@ -190,7 +190,7 @@ struct OBDPIDLibrary {
         OBDPID(
             enabled: false,
             name: "Air-Fuel Ratio (λ)",
-            pid: OBDCommand.Mode1.commandedEquivRatio,
+            pid: .mode1(.commandedEquivRatio),
             formula: "((A*256)+B)/32768",
             units: "λ",
             typicalRange: .init(min: 0.7, max: 1.3),
@@ -201,7 +201,7 @@ struct OBDPIDLibrary {
         OBDPID(
             enabled: false,
             name: "Vehicle Speed",
-            pid: OBDCommand.Mode1.speed,
+            pid: .mode1(.speed),
             formula: "A",
             units: "km/h",
             typicalRange: .init(min: 0, max: 240),
@@ -212,7 +212,7 @@ struct OBDPIDLibrary {
         OBDPID(
             enabled: false,
             name: "Engine Oil Temp",
-            pid: OBDCommand.Mode1.engineOilTemp,
+            pid: .mode1(.engineOilTemp),
             formula: "A - 40",
             units: "°C",
             typicalRange: .init(min: -20, max: 98),
@@ -223,7 +223,7 @@ struct OBDPIDLibrary {
         OBDPID(
             enabled: false,
             name: "Fuel Pressure (Gauge)",
-            pid: OBDCommand.Mode1.fuelPressure,
+            pid: .mode1(.fuelPressure),
             formula: "A*3",
             units: "kPa",
             typicalRange: .init(min: 0, max: 765),
@@ -234,7 +234,7 @@ struct OBDPIDLibrary {
         OBDPID(
             enabled: false,
             name: "Catalyst Temp (Bank 1, Sensor 1)",
-            pid: OBDCommand.Mode1.catalystTempB1S1,
+            pid: .mode1(.catalystTempB1S1),
             formula: "((A*256)+B)/10",
             units: "°C",
             typicalRange: .init(min: 200, max: 900),
@@ -245,7 +245,7 @@ struct OBDPIDLibrary {
         OBDPID(
             enabled: false,
             name: "Throttle Position",
-            pid: OBDCommand.Mode1.throttlePos,
+            pid: .mode1(.throttlePos),
             formula: "((A*256)+B)/10",
             units: "%",
             typicalRange: .init(min: 0, max: 100),
@@ -257,7 +257,7 @@ struct OBDPIDLibrary {
         OBDPID(
             enabled: false,
             name: "Throttle Actuator Command",
-            pid: OBDCommand.Mode1.throttleActuator,
+            pid: .mode1(.throttleActuator),
             formula: "A * 100 / 255",
             units: "%",
             typicalRange: .init(min: 0, max: 100),
@@ -269,7 +269,7 @@ struct OBDPIDLibrary {
         OBDPID(
             enabled: false,
             name: "Throttle Position B",
-            pid: OBDCommand.Mode1.throttlePosB,
+            pid: .mode1(.throttlePosB),
             formula: "A * 100 / 255",
             units: "%",
             typicalRange: .init(min: 0, max: 100),
@@ -280,7 +280,7 @@ struct OBDPIDLibrary {
         OBDPID(
             enabled: false,
             name: "Throttle Position C",
-            pid: OBDCommand.Mode1.throttlePosC,
+            pid: .mode1(.throttlePosC),
             formula: "A * 100 / 255",
             units: "%",
             typicalRange: .init(min: 0, max: 100),
@@ -291,7 +291,7 @@ struct OBDPIDLibrary {
         OBDPID(
             enabled: false,
             name: "Throttle Position D",
-            pid: OBDCommand.Mode1.throttlePosD,
+            pid: .mode1(.throttlePosD),
             formula: "A * 100 / 255",
             units: "%",
             typicalRange: .init(min: 0, max: 100),
@@ -302,7 +302,7 @@ struct OBDPIDLibrary {
         OBDPID(
             enabled: false,
             name: "Throttle Position E",
-            pid: OBDCommand.Mode1.throttlePosE,
+            pid: .mode1(.throttlePosE),
             formula: "A * 100 / 255",
             units: "%",
             typicalRange: .init(min: 0, max: 100),
@@ -313,7 +313,7 @@ struct OBDPIDLibrary {
         OBDPID(
             enabled: false,
             name: "Throttle Position F",
-            pid: OBDCommand.Mode1.throttlePosF,
+            pid: .mode1(.throttlePosF),
             formula: "A * 100 / 255",
             units: "%",
             typicalRange: .init(min: 0, max: 100),
@@ -324,7 +324,7 @@ struct OBDPIDLibrary {
         OBDPID(
             enabled: false,
             name: "Ignition Timing",
-            pid: OBDCommand.Mode1.timingAdvance,
+            pid: .mode1(.timingAdvance),
             formula: "(A/2) – 64",
             units: "° BTDC",
             typicalRange: .init(min: -10, max: 60),
@@ -338,7 +338,7 @@ struct OBDPIDLibrary {
         OBDPID(
             enabled: false,
             name: "Ambient Air Temp",
-            pid: OBDCommand.Mode1.ambientAirTemp,
+            pid: .mode1(.ambientAirTemp),
             formula: "A – 40",
             units: "°C",
             typicalRange: .init(min: -40, max: 50),
@@ -349,7 +349,7 @@ struct OBDPIDLibrary {
         OBDPID(
             enabled: false,
             name: "Relative Throttle Position",
-            pid: OBDCommand.Mode1.relativeThrottlePos,
+            pid: .mode1(.relativeThrottlePos),
             formula: "A * 100/255",
             units: "%",
             typicalRange: .init(min: 0, max: 100),
@@ -360,7 +360,7 @@ struct OBDPIDLibrary {
         OBDPID(
             enabled: false,
             name: "Engine Load",
-            pid: OBDCommand.Mode1.engineLoad,
+            pid: .mode1(.engineLoad),
             formula: "A * 100/255",
             units: "%",
             typicalRange: .init(min: 0, max: 100),
@@ -371,7 +371,7 @@ struct OBDPIDLibrary {
         OBDPID(
             enabled: false,
             name: "Absolute Load",
-            pid: OBDCommand.Mode1.absoluteLoad,
+            pid: .mode1(.absoluteLoad),
             formula: "A * 100/255",
             units: "%",
             typicalRange: .init(min: 0, max: 100),
@@ -382,7 +382,7 @@ struct OBDPIDLibrary {
         OBDPID(
             enabled: false,
             name: "Fuel Level",
-            pid: OBDCommand.Mode1.fuelLevel,
+            pid: .mode1(.fuelLevel),
             formula: "A * 100/255",
             units: "%",
             typicalRange: .init(min: 0, max: 100),
@@ -393,7 +393,7 @@ struct OBDPIDLibrary {
         OBDPID(
             enabled: false,
             name: "Barometric Pressure",
-            pid: OBDCommand.Mode1.barometricPressure,
+            pid: .mode1(.barometricPressure),
             formula: "A",
             units: "kPa",
             typicalRange: .init(min: 80, max: 105),
@@ -404,7 +404,7 @@ struct OBDPIDLibrary {
         OBDPID(
             enabled: false,
             name: "Intake Manifold Pressure (MAP)",
-            pid: OBDCommand.Mode1.intakePressure,
+            pid: .mode1(.intakePressure),
             formula: "A",
             units: "kPa",
             typicalRange: .init(min: 20, max: 250),
@@ -415,7 +415,7 @@ struct OBDPIDLibrary {
         OBDPID(
             enabled: false,
             name: "Fuel Rail Pressure (Absolute)",
-            pid: OBDCommand.Mode1.fuelRailPressureAbs,
+            pid: .mode1(.fuelRailPressureAbs),
             formula: "((A*256)+B) * 10",
             units: "kPa",
             typicalRange: .init(min: 0, max: 20000), // 0–20 MPa
@@ -426,7 +426,7 @@ struct OBDPIDLibrary {
         OBDPID(
             enabled: false,
             name: "Fuel Rail Pressure (Direct Injection)",
-            pid: OBDCommand.Mode1.fuelRailPressureDirect,
+            pid: .mode1(.fuelRailPressureDirect),
             formula: "((A*256)+B) * 10",
             units: "kPa",
             typicalRange: .init(min: 0, max: 20000), // 0–20 MPa
@@ -437,7 +437,7 @@ struct OBDPIDLibrary {
         OBDPID(
             enabled: false,
             name: "Fuel Rail Pressure (Vacuum Referenced)",
-            pid: OBDCommand.Mode1.fuelRailPressureVac,
+            pid: .mode1(.fuelRailPressureVac),
             formula: "((A*256)+B) * 0.079",
             units: "kPa",
             typicalRange: .init(min: 0, max: 700),
@@ -451,7 +451,7 @@ struct OBDPIDLibrary {
         OBDPID(
             enabled: false,
             name: "Mass Air Flow (MAF)",
-            pid: OBDCommand.Mode1.maf,
+            pid: .mode1(.maf),
             formula: "((A*256)+B)/100",
             units: "g/s",
             typicalRange: .init(min: 0, max: 300),
@@ -462,7 +462,7 @@ struct OBDPIDLibrary {
         OBDPID(
             enabled: false,
             name: "Fuel Rate",
-            pid: OBDCommand.Mode1.fuelRate,
+            pid: .mode1(.fuelRate),
             formula: "((A*256)+B)/20",
             units: "L/h",
             typicalRange: .init(min: 0, max: 50),
@@ -473,7 +473,7 @@ struct OBDPIDLibrary {
         OBDPID(
             enabled: false,
             name: "Relative Accelerator Position",
-            pid: OBDCommand.Mode1.relativeAccelPos,
+            pid: .mode1(.relativeAccelPos),
             formula: "A * 100/255",
             units: "%",
             typicalRange: .init(min: 0, max: 100),
@@ -484,7 +484,7 @@ struct OBDPIDLibrary {
         OBDPID(
             enabled: false,
             name: "Catalyst Temp (Bank 2, Sensor 1)",
-            pid: OBDCommand.Mode1.catalystTempB2S1,
+            pid: .mode1(.catalystTempB2S1),
             formula: "((A*256)+B)/10",
             units: "°C",
             typicalRange: .init(min: 200, max: 900),
@@ -495,7 +495,7 @@ struct OBDPIDLibrary {
         OBDPID(
             enabled: false,
             name: "Catalyst Temp (Bank 1, Sensor 2)",
-            pid: OBDCommand.Mode1.catalystTempB1S2,
+            pid: .mode1(.catalystTempB1S2),
             formula: "((A*256)+B)/10",
             units: "°C",
             typicalRange: .init(min: 200, max: 900),
@@ -506,7 +506,7 @@ struct OBDPIDLibrary {
         OBDPID(
             enabled: false,
             name: "Catalyst Temp (Bank 2, Sensor 2)",
-            pid: OBDCommand.Mode1.catalystTempB2S2,
+            pid: .mode1(.catalystTempB2S2),
             formula: "((A*256)+B)/10",
             units: "°C",
             typicalRange: .init(min: 200, max: 900),
@@ -520,7 +520,7 @@ struct OBDPIDLibrary {
         OBDPID(
             enabled: false,
             name: "Short Term Fuel Trim (Bank 2)",
-            pid: OBDCommand.Mode1.shortFuelTrim2,
+            pid: .mode1(.shortFuelTrim2),
             formula: "(A - 128) * 100 / 128",
             units: "%",
             typicalRange: .init(min: -25, max: 25),
@@ -531,7 +531,7 @@ struct OBDPIDLibrary {
         OBDPID(
             enabled: false,
             name: "Long Term Fuel Trim (Bank 2)",
-            pid: OBDCommand.Mode1.longFuelTrim2,
+            pid: .mode1(.longFuelTrim2),
             formula: "(A - 128) * 100 / 128",
             units: "%",
             typicalRange: .init(min: -25, max: 25),
@@ -542,7 +542,7 @@ struct OBDPIDLibrary {
         OBDPID(
             enabled: false,
             name: "O₂ Sensor Voltage (Bank 2, Sensor 1)",
-            pid: OBDCommand.Mode1.O2Bank2Sensor1,
+            pid: .mode1(.O2Bank2Sensor1),
             formula: "A / 200",
             units: "V",
             typicalRange: .init(min: 0.0, max: 1.0),
@@ -553,7 +553,7 @@ struct OBDPIDLibrary {
         OBDPID(
             enabled: false,
             name: "O₂ Sensor Voltage (Bank 2, Sensor 2)",
-            pid: OBDCommand.Mode1.O2Bank2Sensor2,
+            pid: .mode1(.O2Bank2Sensor2),
             formula: "A / 200",
             units: "V",
             typicalRange: .init(min: 0.0, max: 1.0),
@@ -567,7 +567,7 @@ struct OBDPIDLibrary {
         OBDPID(
             enabled: false,
             name: "Long Term Fuel Trim (Bank 1)",
-            pid: OBDCommand.Mode1.longFuelTrim1,
+            pid: .mode1(.longFuelTrim1),
             formula: "(A - 128) * 100 / 128",
             units: "%",
             typicalRange: .init(min: -25, max: 25),
@@ -578,7 +578,7 @@ struct OBDPIDLibrary {
         OBDPID(
             enabled: false,
             name: "Short Term Fuel Trim (Bank 1)",
-            pid: OBDCommand.Mode1.shortFuelTrim1,
+            pid: .mode1(.shortFuelTrim1),
             formula: "(A - 128) * 100 / 128",
             units: "%",
             typicalRange: .init(min: -25, max: 25),
@@ -589,7 +589,7 @@ struct OBDPIDLibrary {
         OBDPID(
             enabled: false,
             name: "O₂ Sensor Wideband Current (Sensor 7)",
-            pid: OBDCommand.Mode1.O2Sensor7WRCurrent,
+            pid: .mode1(.O2Sensor7WRCurrent),
             formula: "((A*256)+B - 32768) / 256",
             units: "mA",
             typicalRange: .init(min: -10, max: 10),
@@ -600,7 +600,7 @@ struct OBDPIDLibrary {
         OBDPID(
             enabled: false,
             name: "O₂ Sensor Wideband Current (Sensor 1)",
-            pid: OBDCommand.Mode1.O2Sensor1WRCurrent,
+            pid: .mode1(.O2Sensor1WRCurrent),
             formula: "((A*256)+B - 32768) / 256",
             units: "mA",
             typicalRange: .init(min: -10, max: 10),
@@ -611,7 +611,7 @@ struct OBDPIDLibrary {
         OBDPID(
             enabled: false,
             name: "O₂ Sensor Wideband Current (Sensor 2)",
-            pid: OBDCommand.Mode1.O2Sensor2WRCurrent,
+            pid: .mode1(.O2Sensor2WRCurrent),
             formula: "((A*256)+B - 32768) / 256",
             units: "mA",
             typicalRange: .init(min: -10, max: 10),
@@ -622,7 +622,7 @@ struct OBDPIDLibrary {
         OBDPID(
             enabled: false,
             name: "EVAP Purge Command",
-            pid: OBDCommand.Mode1.evaporativePurge,
+            pid: .mode1(.evaporativePurge),
             formula: "A * 100 / 255",
             units: "%",
             typicalRange: .init(min: 0, max: 100),
@@ -633,7 +633,7 @@ struct OBDPIDLibrary {
         OBDPID(
             enabled: false,
             name: "O₂ Sensor Voltage (Bank 1, Sensor 1)",
-            pid: OBDCommand.Mode1.O2Bank1Sensor1,
+            pid: .mode1(.O2Bank1Sensor1),
             formula: "A / 200",
             units: "V",
             typicalRange: .init(min: 0.0, max: 1.0),
@@ -644,7 +644,7 @@ struct OBDPIDLibrary {
         OBDPID(
             enabled: false,
             name: "O₂ Sensor Voltage (Bank 1, Sensor 2)",
-            pid: OBDCommand.Mode1.O2Bank1Sensor2,
+            pid: .mode1(.O2Bank1Sensor2),
             formula: "A / 200",
             units: "V",
             typicalRange: .init(min: 0.0, max: 1.0),
@@ -655,7 +655,7 @@ struct OBDPIDLibrary {
         OBDPID(
             enabled: false,
             name: "O₂ Sensor Voltage (Bank 1, Sensor 3)",
-            pid: OBDCommand.Mode1.O2Bank1Sensor3,
+            pid: .mode1(.O2Bank1Sensor3),
             formula: "A / 200",
             units: "V",
             typicalRange: .init(min: 0.0, max: 1.0),
@@ -666,7 +666,7 @@ struct OBDPIDLibrary {
         OBDPID(
             enabled: false,
             name: "O₂ Sensor Voltage (Bank 1, Sensor 4)",
-            pid: OBDCommand.Mode1.O2Bank1Sensor4,
+            pid: .mode1(.O2Bank1Sensor4),
             formula: "A / 200",
             units: "V",
             typicalRange: .init(min: 0.0, max: 1.0),
@@ -677,7 +677,7 @@ struct OBDPIDLibrary {
         OBDPID(
             enabled: false,
             name: "O₂ Sensor Voltage (Bank 2, Sensor 3)",
-            pid: OBDCommand.Mode1.O2Bank2Sensor3,
+            pid: .mode1(.O2Bank2Sensor3),
             formula: "A / 200",
             units: "V",
             typicalRange: .init(min: 0.0, max: 1.0),
@@ -688,7 +688,7 @@ struct OBDPIDLibrary {
         OBDPID(
             enabled: false,
             name: "O₂ Sensors Present (Bitmap)",
-            pid: OBDCommand.Mode1.O2Sensor,
+            pid: .mode1(.O2Sensor),
             formula: "bitfield",
             units: "NA",
             typicalRange: .init(min: 0, max: 255),
@@ -703,7 +703,7 @@ struct OBDPIDLibrary {
         OBDPID(
             enabled: false,
             name: "Fuel Type",
-            pid: OBDCommand.Mode1.fuelType,
+            pid: .mode1(.fuelType),
             formula: "categorical",
             units: "NA",
             typicalRange: .init(min: 0, max: 255),
@@ -715,7 +715,7 @@ struct OBDPIDLibrary {
         OBDPID(
             enabled: false,
             name: "OBD Compliance",
-            pid: OBDCommand.Mode1.obdcompliance,
+            pid: .mode1(.obdcompliance),
             formula: "categorical",
             units: "NA",
             typicalRange: .init(min: 0, max: 255),
@@ -727,7 +727,7 @@ struct OBDPIDLibrary {
         OBDPID(
             enabled: false,
             name: "Drive Cycle Status",
-            pid: OBDCommand.Mode1.statusDriveCycle,
+            pid: .mode1(.statusDriveCycle),
             formula: "bitfield",
             units: "NA",
             typicalRange: .init(min: 0, max: 0xFFFFFFFF),
@@ -739,7 +739,7 @@ struct OBDPIDLibrary {
         OBDPID(
             enabled: false,
             name: "Freeze DTC",
-            pid: OBDCommand.Mode1.freezeDTC,
+            pid: .mode1(.freezeDTC),
             formula: "DTC",
             units: "NA",
             typicalRange: .init(min: 0, max: 0xFFFF),
@@ -751,7 +751,7 @@ struct OBDPIDLibrary {
         OBDPID(
             enabled: false,
             name: "Secondary Air Status",
-            pid: OBDCommand.Mode1.airStatus,
+            pid: .mode1(.airStatus),
             formula: "categorical",
             units: "NA",
             typicalRange: .init(min: 0, max: 255),
@@ -764,7 +764,7 @@ struct OBDPIDLibrary {
         OBDPID(
             enabled: false,
             name: "EVAP System Vapor Pressure",
-            pid: OBDCommand.Mode1.evapVaporPressure,
+            pid: .mode1(.evapVaporPressure),
             formula: "((A*256)+B) - 32767",
             units: "Pa",
             typicalRange: .init(min: -2000, max: 2000),
@@ -772,5 +772,50 @@ struct OBDPIDLibrary {
             dangerRange: nil,
             notes: "Reported in Pa on some ECUs; verify units"
         )
+        
+        // GM extended commands
+        ,
+
+        OBDPID(
+            enabled: false,
+            name: "GM Oil Pressure",
+            pid: .GMmode22(.engineOilPressure),
+            formula: "[psi]=A×0.578",
+            units: "kPa",
+            typicalRange: .init(min: 0, max: 800),
+            warningRange: nil,
+            dangerRange: nil
+        ),
+        OBDPID(
+            enabled: false,
+            name: "GM Oil Temp",
+            pid: .GMmode22(.engineOilTemp),
+            formula: "A - 40",
+            units: "°C",
+            typicalRange: .init(min: -20, max: 98),
+            warningRange: .init(min: 98, max: 108),
+            dangerRange: .init(min: 108, max: 150),
+        ),
+        OBDPID(
+            enabled: false,
+            name: "GM AC High Pressure",
+            pid: .GMmode22(.ACHighPressure),
+            formula: "PAC​[psig]=(A×1.83)−14.7",
+            units: "kPa",
+            typicalRange: .init(min: 0, max: 800),
+            warningRange: nil,
+            dangerRange: nil
+        ),
+        OBDPID(
+            enabled: false,
+            name: "GM Trans Fluid Temp",
+            pid: .GMmode22(.transFluidTemp),
+            formula: "A - 40",
+            units: "°C",
+            typicalRange: .init(min: -20, max: 98),
+            warningRange: .init(min: 98, max: 108),
+            dangerRange: .init(min: 108, max: 150),
+        )
+        
     ]
 }
