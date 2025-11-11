@@ -7,6 +7,19 @@
 
 import UIKit
 
+func deviceModelIdentifier() -> String {
+    var systemInfo = utsname()
+    uname(&systemInfo)
+    return String(bytes: Data(bytes: &systemInfo.machine,
+                              count: Int(_SYS_NAMELEN)),
+                  encoding: .ascii)?
+        .trimmingCharacters(in: .controlCharacters) ?? "unknown"
+}
+
+func isRunningOniPadHardware() -> Bool {
+    return deviceModelIdentifier().starts(with: "iPad")
+}
+
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?
@@ -20,7 +33,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let window = UIWindow(windowScene: windowScene)
 
 #if RELEASE
-        if UIDevice.current.userInterfaceIdiom == .pad {
+        if UIDevice.current.userInterfaceIdiom == .pad || isRunningOniPadHardware() {
             window.rootViewController = UnsupportedDeviceViewController()
             self.window = window
             window.makeKeyAndVisible()
