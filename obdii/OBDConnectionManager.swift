@@ -233,18 +233,31 @@ class OBDConnectionManager: ObservableObject {
         var enabledNow = enabledPIDs
         if (querySupportedPids == true)
         {
-            // Filter out any enabled PIDs that are not supported by the vehicle/adapter
+            // Build the supported Mode 01 set
             let supportedMode1: Set<OBDCommand> = Set(
                 supportedPids.compactMap { cmd in
                     if case let .mode1(m) = cmd { return .mode1(m) }
                     return nil
                 }
             )
-            enabledNow = enabledPIDs.intersection(supportedMode1)
-            
-            let unsupported = enabledPIDs.subtracting(supportedMode1)
-            obdDebug("removing unsupported pids: \(unsupported)")
-            
+
+            // Keep all non-mode1; for mode1 keep only those present in supportedMode1
+            let filtered: Set<OBDCommand> = Set(enabledPIDs.filter { cmd in
+                switch cmd {
+                case .mode1:
+                    return supportedMode1.contains(cmd)
+                default:
+                    return true
+                }
+            })
+
+            // Compute and log removed (unsupported) items among mode1
+            let removed = enabledPIDs.subtracting(filtered)
+            if !removed.isEmpty {
+                obdDebug("removing unsupported mode1 pids: \(removed)")
+            }
+
+            enabledNow = filtered
         }
 
         // Prune pidStats to only those still enabled (after support filtering)
@@ -288,25 +301,34 @@ class OBDConnectionManager: ObservableObject {
                 receiveValue: { [weak self] measurements in
                     guard let self else { return }
                     for (command, decode) in measurements {
-                        // Only handle Mode 01 commands
-                        guard case let .mode1(pid) = command else { continue }
-                        
-                        switch pid {
-                        case .fuelStatus:
-                            self.fuelStatus = decode.codeResult!
-                        case .status:
-                            self.MILStatus = decode.statusResult!
+                        // Allow Mode 01 and GM Mode 22 commands through
+                        switch command {
+                        case .mode1(let pid):
+                            switch pid {
+                            case .fuelStatus:
+                                self.fuelStatus = decode.codeResult!
+                            case .status:
+                                self.MILStatus = decode.statusResult!
+                            default:
+                                if let measurement = decode.measurementResult {
+                                    let key: OBDCommand = .mode1(pid)
+                                    var stats = self.pidStats[key] ?? PIDStats(pid: key, measurement: measurement)
+                                    stats.update(with: measurement)
+                                    self.pidStats[key] = stats
+                                }
+                            }
+                        case .GMmode22:
+                            // Treat GM Mode 22 as general measurements for stats
+                            if let measurement = decode.measurementResult {
+                                let key: OBDCommand = command
+                                var stats = self.pidStats[key] ?? PIDStats(pid: key, measurement: measurement)
+                                stats.update(with: measurement)
+                                self.pidStats[key] = stats
+                            }
                         default:
-                            guard let measurement = decode.measurementResult else { continue }
-                            // Wrap Mode1 back into OBDCommand for stats key and PIDStats
-                            let key: OBDCommand = .mode1(pid)
-                            var stats = self.pidStats[key] ?? PIDStats(pid: key, measurement: measurement)
-                            stats.update(with: measurement)
-                            self.pidStats[key] = stats
+                            // Ignore other modes here unless needed
+                            continue
                         }
-                        
-                        // Only handle measurement results
-                      
                     }
                 }
             )
