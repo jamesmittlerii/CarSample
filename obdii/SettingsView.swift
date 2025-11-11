@@ -117,6 +117,12 @@ struct SettingsView: View {
                     .accessibilityHidden(true)
                     #endif
                 }
+                Section(header: Text("About")){
+                    HStack {
+                        Text(aboutDetailString()).multilineTextAlignment(.trailing)
+                       
+                    }
+                }
             }
             .navigationTitle("Settings")
             #if canImport(UIKit)
@@ -178,7 +184,7 @@ struct SettingsView: View {
 
         do {
             let data = try await collectLogs(since: -300) // last 5 minutes
-            let tempURL = try writeToTemporaryFile(data: data, suggestedName: "SwiftOBD2-logs.json")
+            let tempURL = try writeToTemporaryFile(data: data, suggestedName: "RheosoftOBD2-logs.json")
             shareItems = [tempURL]
             isPresentingShare = true
         } catch {

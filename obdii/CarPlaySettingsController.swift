@@ -101,15 +101,8 @@ class CarPlaySettingsController {
     }
     
     private func makeAboutItem() -> CPListItem {
-        let bundle = Bundle.main
-        let displayName = bundle.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String
-            ?? bundle.object(forInfoDictionaryKey: "CFBundleName") as? String
-            ?? "App"
-        let version = bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "—"
-        let build = bundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "—"
         let aboutTitle = "About"
-        let aboutDetail = "\(displayName) v\(version) build:\(build)"
-        
+        let aboutDetail = aboutDetailString()
         return makeItem(aboutTitle, detailText: aboutDetail)
     }
 
@@ -139,4 +132,3 @@ class CarPlaySettingsController {
         return template
     }
 }
-

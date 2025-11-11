@@ -142,7 +142,7 @@ class CarPlayGaugesController {
             let value = currentValue(for: pid)
             let image = drawGaugeImage(for: pid, value: value)
             let subtitle = (value.map { String(format: "%.1f %@", $0, pid.units!) }) ?? "— \(pid.units!)"
-            return CPListImageRowItemRowElement(image: image, title: pid.name, subtitle: subtitle)
+            return CPListImageRowItemRowElement(image: image, title: pid.label, subtitle: subtitle)
         }
 
         let item = CPListImageRowItem(text: "", elements: rowElements, allowsMultipleLines: true)
@@ -185,7 +185,7 @@ class CarPlayGaugesController {
         currentInfoTemplate = nil
         
         updateSensorItems(for: pid)
-        let template = CPInformationTemplate(title: pid.name, layout: .twoColumn, items: sensorItems, actions: [])
+        let template = CPInformationTemplate(title: pid.name  , layout: .twoColumn, items: sensorItems, actions: [])
         currentInfoTemplate = template
 
         interfaceController?.pushTemplate(template, animated: false, completion: nil)

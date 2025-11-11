@@ -5,6 +5,7 @@
 //  Created by cisstudent on 11/9/25.
 //
 import OSLog
+import Foundation
 
 struct LogEntry: Codable, Sendable {
     let timestamp: Date
@@ -29,7 +30,7 @@ func collectLogs(since: TimeInterval = -300) async throws -> Data {
 
     // 5. Filter by subsystem and category
     let filtered = logEntries.filter {
-        $0.subsystem == subsystem && ($0.category == "Connection" || $0.category == "Communication")
+        $0.subsystem == subsystem && ($0.category == "AppInit" || $0.category == "Connection" || $0.category == "Communication")
     }
 
     // 6. Map to your LogEntry structure
@@ -44,4 +45,15 @@ func collectLogs(since: TimeInterval = -300) async throws -> Data {
 
     let jsonData = try JSONEncoder().encode(appLogs)
     return jsonData
+}
+
+/// Builds a user-facing About detail string that matches CarPlay and Settings.
+/// Example: "<DisplayName> v1.2.3 build:45"
+func aboutDetailString(bundle: Bundle = .main) -> String {
+    let displayName = bundle.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String
+        ?? bundle.object(forInfoDictionaryKey: "CFBundleName") as? String
+        ?? "App"
+    let version = bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "—"
+    let build = bundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "—"
+    return "\(displayName) v\(version) build:\(build)"
 }

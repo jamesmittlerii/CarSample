@@ -10,6 +10,8 @@ import SwiftUI
 
 class ViewController: UIViewController {
 
+    private let carPlayPromptKey = "HasShownCarPlayDrivingPrompt"
+
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -35,5 +37,27 @@ class ViewController: UIViewController {
         hostingController.didMove(toParent: self)
     }
 
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
 
+        // Present the dialog once
+        let hasShown = UserDefaults.standard.bool(forKey: carPlayPromptKey)
+        if !hasShown {
+            presentCarPlayDrivingPrompt()
+            UserDefaults.standard.set(true, forKey: carPlayPromptKey)
+        }
+    }
+
+    private func presentCarPlayDrivingPrompt() {
+        let alert = UIAlertController(
+            title: "Safety Reminder",
+            message: "Do not change settings while driving.",
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+        // Ensure we present on the main thread
+        DispatchQueue.main.async { [weak self] in
+            self?.present(alert, animated: true, completion: nil)
+        }
+    }
 }

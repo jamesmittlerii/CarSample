@@ -50,7 +50,8 @@ struct OBDPID: Identifiable, Hashable, Codable {
 
     let id: UUID
     var enabled: Bool
-    let name: String
+    let label: String          // Short name for compact UI
+    let name: String      // Full/original descriptive name
     let pid: OBDCommand
     let formula: String?
     let units: String?
@@ -63,7 +64,8 @@ struct OBDPID: Identifiable, Hashable, Codable {
     init(
         id: UUID = UUID(),
         enabled: Bool = false,
-        name: String,
+        label: String,
+        name: String? = nil,
         pid: OBDCommand,
         formula: String? = nil,
         units: String,
@@ -74,7 +76,8 @@ struct OBDPID: Identifiable, Hashable, Codable {
         kind: Kind = .gauge
     ) {
         self.id = id
-        self.name = name
+        self.label = label
+        self.name = name ?? label
         self.pid = pid
         self.formula = formula
         self.units = units
@@ -121,6 +124,7 @@ struct OBDPIDLibrary {
         
         OBDPID(
             enabled: true,
+            label: "FuelStat",
             name: "Fuel System Status",
             pid: .mode1(.fuelStatus),
             //formula: "A – 40",
@@ -133,6 +137,7 @@ struct OBDPIDLibrary {
         ),
         OBDPID(
             enabled: true,
+            label: "MIL Stat",
             name: "MIL Status",
             pid: .mode1(.status),
             //formula: "A – 40",
@@ -145,7 +150,8 @@ struct OBDPIDLibrary {
         ),
         OBDPID(
             enabled: true,
-            name: "Intake Air Temp (IAT)",
+            label: "IAT",
+            name: "Intake Air Temperature",
             pid: .mode1(.intakeTemp),
             formula: "A – 40",
             units: "°C",
@@ -156,7 +162,8 @@ struct OBDPIDLibrary {
         ),
         OBDPID(
             enabled: true,
-            name: "OBD Module Voltage",
+            label: "Voltage",
+            name: "Control Module Voltage",
             pid: .mode1(.controlModuleVoltage),
             formula: "((A*256)+B)/1000",
             units: "V",
@@ -167,7 +174,8 @@ struct OBDPIDLibrary {
         ),
         OBDPID(
             enabled: true,
-            name: "Engine Coolant Temp",
+            label: "Coolant",
+            name: "Engine Coolant Temperature",
             pid: .mode1(.coolantTemp),
             formula: "A - 40",
             units: "°C",
@@ -178,6 +186,7 @@ struct OBDPIDLibrary {
         ),
         OBDPID(
             enabled: true,
+            label: "RPM",
             name: "Engine RPM",
             pid: .mode1(.rpm),
             formula: "((A*256)+B)/4",
@@ -189,7 +198,8 @@ struct OBDPIDLibrary {
         ),
         OBDPID(
             enabled: false,
-            name: "Air-Fuel Ratio (λ)",
+            label: "AFR Lam",
+            name: "Commanded Equivalence Ratio (Lambda)",
             pid: .mode1(.commandedEquivRatio),
             formula: "((A*256)+B)/32768",
             units: "λ",
@@ -200,6 +210,7 @@ struct OBDPIDLibrary {
         ),
         OBDPID(
             enabled: false,
+            label: "Speed",
             name: "Vehicle Speed",
             pid: .mode1(.speed),
             formula: "A",
@@ -211,7 +222,8 @@ struct OBDPIDLibrary {
         ),
         OBDPID(
             enabled: false,
-            name: "Engine Oil Temp",
+            label: "Oil Temp",
+            name: "Engine Oil Temperature",
             pid: .mode1(.engineOilTemp),
             formula: "A - 40",
             units: "°C",
@@ -222,7 +234,8 @@ struct OBDPIDLibrary {
         ),
         OBDPID(
             enabled: false,
-            name: "Fuel Pressure (Gauge)",
+            label: "Fuel Pres",
+            name: "Fuel Pressure",
             pid: .mode1(.fuelPressure),
             formula: "A*3",
             units: "kPa",
@@ -233,7 +246,8 @@ struct OBDPIDLibrary {
         ),
         OBDPID(
             enabled: false,
-            name: "Catalyst Temp (Bank 1, Sensor 1)",
+            label: "CatT B1S1",
+            name: "Catalyst Temperature Bank 1 Sensor 1",
             pid: .mode1(.catalystTempB1S1),
             formula: "((A*256)+B)/10",
             units: "°C",
@@ -244,6 +258,7 @@ struct OBDPIDLibrary {
         ),
         OBDPID(
             enabled: false,
+            label: "Throttle",
             name: "Throttle Position",
             pid: .mode1(.throttlePos),
             formula: "((A*256)+B)/10",
@@ -256,6 +271,7 @@ struct OBDPIDLibrary {
         // Newly added: Throttle Actuator Command
         OBDPID(
             enabled: false,
+            label: "Thr Act",
             name: "Throttle Actuator Command",
             pid: .mode1(.throttleActuator),
             formula: "A * 100 / 255",
@@ -268,7 +284,8 @@ struct OBDPIDLibrary {
         // Newly added: Alternate Throttle Position Sensors (disabled gauges)
         OBDPID(
             enabled: false,
-            name: "Throttle Position B",
+            label: "TPS B",
+            name: "Throttle Position Sensor B",
             pid: .mode1(.throttlePosB),
             formula: "A * 100 / 255",
             units: "%",
@@ -279,7 +296,8 @@ struct OBDPIDLibrary {
         ),
         OBDPID(
             enabled: false,
-            name: "Throttle Position C",
+            label: "TPS C",
+            name: "Throttle Position Sensor C",
             pid: .mode1(.throttlePosC),
             formula: "A * 100 / 255",
             units: "%",
@@ -290,7 +308,8 @@ struct OBDPIDLibrary {
         ),
         OBDPID(
             enabled: false,
-            name: "Throttle Position D",
+            label: "TPS D",
+            name: "Throttle Position Sensor D",
             pid: .mode1(.throttlePosD),
             formula: "A * 100 / 255",
             units: "%",
@@ -301,7 +320,8 @@ struct OBDPIDLibrary {
         ),
         OBDPID(
             enabled: false,
-            name: "Throttle Position E",
+            label: "TPS E",
+            name: "Throttle Position Sensor E",
             pid: .mode1(.throttlePosE),
             formula: "A * 100 / 255",
             units: "%",
@@ -312,7 +332,8 @@ struct OBDPIDLibrary {
         ),
         OBDPID(
             enabled: false,
-            name: "Throttle Position F",
+            label: "TPS F",
+            name: "Throttle Position Sensor F",
             pid: .mode1(.throttlePosF),
             formula: "A * 100 / 255",
             units: "%",
@@ -323,7 +344,8 @@ struct OBDPIDLibrary {
         ),
         OBDPID(
             enabled: false,
-            name: "Ignition Timing",
+            label: "Ign Time",
+            name: "Timing Advance",
             pid: .mode1(.timingAdvance),
             formula: "(A/2) – 64",
             units: "° BTDC",
@@ -337,7 +359,8 @@ struct OBDPIDLibrary {
 
         OBDPID(
             enabled: false,
-            name: "Ambient Air Temp",
+            label: "Amb Temp",
+            name: "Ambient Air Temperature",
             pid: .mode1(.ambientAirTemp),
             formula: "A – 40",
             units: "°C",
@@ -348,6 +371,7 @@ struct OBDPIDLibrary {
         ),
         OBDPID(
             enabled: false,
+            label: "Rel TPS",
             name: "Relative Throttle Position",
             pid: .mode1(.relativeThrottlePos),
             formula: "A * 100/255",
@@ -359,7 +383,8 @@ struct OBDPIDLibrary {
         ),
         OBDPID(
             enabled: false,
-            name: "Engine Load",
+            label: "Eng Load",
+            name: "Calculated Engine Load",
             pid: .mode1(.engineLoad),
             formula: "A * 100/255",
             units: "%",
@@ -370,7 +395,8 @@ struct OBDPIDLibrary {
         ),
         OBDPID(
             enabled: false,
-            name: "Absolute Load",
+            label: "Abs Load",
+            name: "Absolute Load Value",
             pid: .mode1(.absoluteLoad),
             formula: "A * 100/255",
             units: "%",
@@ -381,7 +407,8 @@ struct OBDPIDLibrary {
         ),
         OBDPID(
             enabled: false,
-            name: "Fuel Level",
+            label: "Fuel Lvl",
+            name: "Fuel Level Input",
             pid: .mode1(.fuelLevel),
             formula: "A * 100/255",
             units: "%",
@@ -392,6 +419,7 @@ struct OBDPIDLibrary {
         ),
         OBDPID(
             enabled: false,
+            label: "Baro",
             name: "Barometric Pressure",
             pid: .mode1(.barometricPressure),
             formula: "A",
@@ -403,7 +431,8 @@ struct OBDPIDLibrary {
         ),
         OBDPID(
             enabled: false,
-            name: "Intake Manifold Pressure (MAP)",
+            label: "MAP",
+            name: "Intake Manifold Absolute Pressure",
             pid: .mode1(.intakePressure),
             formula: "A",
             units: "kPa",
@@ -414,6 +443,7 @@ struct OBDPIDLibrary {
         ),
         OBDPID(
             enabled: false,
+            label: "Rail P",
             name: "Fuel Rail Pressure (Absolute)",
             pid: .mode1(.fuelRailPressureAbs),
             formula: "((A*256)+B) * 10",
@@ -425,6 +455,7 @@ struct OBDPIDLibrary {
         ),
         OBDPID(
             enabled: false,
+            label: "Rail P DI",
             name: "Fuel Rail Pressure (Direct Injection)",
             pid: .mode1(.fuelRailPressureDirect),
             formula: "((A*256)+B) * 10",
@@ -436,7 +467,8 @@ struct OBDPIDLibrary {
         ),
         OBDPID(
             enabled: false,
-            name: "Fuel Rail Pressure (Vacuum Referenced)",
+            label: "Rail P Vac",
+            name: "Fuel Rail Pressure (Relative to Manifold Vacuum)",
             pid: .mode1(.fuelRailPressureVac),
             formula: "((A*256)+B) * 0.079",
             units: "kPa",
@@ -450,7 +482,8 @@ struct OBDPIDLibrary {
 
         OBDPID(
             enabled: false,
-            name: "Mass Air Flow (MAF)",
+            label: "MAF",
+            name: "Mass Air Flow",
             pid: .mode1(.maf),
             formula: "((A*256)+B)/100",
             units: "g/s",
@@ -461,6 +494,7 @@ struct OBDPIDLibrary {
         ),
         OBDPID(
             enabled: false,
+            label: "FuelRate",
             name: "Fuel Rate",
             pid: .mode1(.fuelRate),
             formula: "((A*256)+B)/20",
@@ -472,7 +506,8 @@ struct OBDPIDLibrary {
         ),
         OBDPID(
             enabled: false,
-            name: "Relative Accelerator Position",
+            label: "Rel Accel",
+            name: "Relative Accelerator Pedal Position",
             pid: .mode1(.relativeAccelPos),
             formula: "A * 100/255",
             units: "%",
@@ -483,7 +518,8 @@ struct OBDPIDLibrary {
         ),
         OBDPID(
             enabled: false,
-            name: "Catalyst Temp (Bank 2, Sensor 1)",
+            label: "CatT B2S1",
+            name: "Catalyst Temperature Bank 2 Sensor 1",
             pid: .mode1(.catalystTempB2S1),
             formula: "((A*256)+B)/10",
             units: "°C",
@@ -494,7 +530,8 @@ struct OBDPIDLibrary {
         ),
         OBDPID(
             enabled: false,
-            name: "Catalyst Temp (Bank 1, Sensor 2)",
+            label: "CatT B1S2",
+            name: "Catalyst Temperature Bank 1 Sensor 2",
             pid: .mode1(.catalystTempB1S2),
             formula: "((A*256)+B)/10",
             units: "°C",
@@ -505,7 +542,8 @@ struct OBDPIDLibrary {
         ),
         OBDPID(
             enabled: false,
-            name: "Catalyst Temp (Bank 2, Sensor 2)",
+            label: "CatT B2S2",
+            name: "Catalyst Temperature Bank 2 Sensor 2",
             pid: .mode1(.catalystTempB2S2),
             formula: "((A*256)+B)/10",
             units: "°C",
@@ -519,7 +557,8 @@ struct OBDPIDLibrary {
 
         OBDPID(
             enabled: false,
-            name: "Short Term Fuel Trim (Bank 2)",
+            label: "STFT B2",
+            name: "Short Term Fuel Trim Bank 2",
             pid: .mode1(.shortFuelTrim2),
             formula: "(A - 128) * 100 / 128",
             units: "%",
@@ -530,7 +569,8 @@ struct OBDPIDLibrary {
         ),
         OBDPID(
             enabled: false,
-            name: "Long Term Fuel Trim (Bank 2)",
+            label: "LTFT B2",
+            name: "Long Term Fuel Trim Bank 2",
             pid: .mode1(.longFuelTrim2),
             formula: "(A - 128) * 100 / 128",
             units: "%",
@@ -541,7 +581,8 @@ struct OBDPIDLibrary {
         ),
         OBDPID(
             enabled: false,
-            name: "O₂ Sensor Voltage (Bank 2, Sensor 1)",
+            label: "O2V B2S1",
+            name: "O2 Sensor Voltage Bank 2 Sensor 1",
             pid: .mode1(.O2Bank2Sensor1),
             formula: "A / 200",
             units: "V",
@@ -552,7 +593,8 @@ struct OBDPIDLibrary {
         ),
         OBDPID(
             enabled: false,
-            name: "O₂ Sensor Voltage (Bank 2, Sensor 2)",
+            label: "O2V B2S2",
+            name: "O2 Sensor Voltage Bank 2 Sensor 2",
             pid: .mode1(.O2Bank2Sensor2),
             formula: "A / 200",
             units: "V",
@@ -566,7 +608,8 @@ struct OBDPIDLibrary {
 
         OBDPID(
             enabled: false,
-            name: "Long Term Fuel Trim (Bank 1)",
+            label: "LTFT B1",
+            name: "Long Term Fuel Trim Bank 1",
             pid: .mode1(.longFuelTrim1),
             formula: "(A - 128) * 100 / 128",
             units: "%",
@@ -577,7 +620,8 @@ struct OBDPIDLibrary {
         ),
         OBDPID(
             enabled: false,
-            name: "Short Term Fuel Trim (Bank 1)",
+            label: "STFT B1",
+            name: "Short Term Fuel Trim Bank 1",
             pid: .mode1(.shortFuelTrim1),
             formula: "(A - 128) * 100 / 128",
             units: "%",
@@ -588,7 +632,8 @@ struct OBDPIDLibrary {
         ),
         OBDPID(
             enabled: false,
-            name: "O₂ Sensor Wideband Current (Sensor 7)",
+            label: "WR I S7",
+            name: "Wideband O2 Sensor Current Sensor 7",
             pid: .mode1(.O2Sensor7WRCurrent),
             formula: "((A*256)+B - 32768) / 256",
             units: "mA",
@@ -599,7 +644,8 @@ struct OBDPIDLibrary {
         ),
         OBDPID(
             enabled: false,
-            name: "O₂ Sensor Wideband Current (Sensor 1)",
+            label: "WR I S1",
+            name: "Wideband O2 Sensor Current Sensor 1",
             pid: .mode1(.O2Sensor1WRCurrent),
             formula: "((A*256)+B - 32768) / 256",
             units: "mA",
@@ -610,7 +656,8 @@ struct OBDPIDLibrary {
         ),
         OBDPID(
             enabled: false,
-            name: "O₂ Sensor Wideband Current (Sensor 2)",
+            label: "WR I S2",
+            name: "Wideband O2 Sensor Current Sensor 2",
             pid: .mode1(.O2Sensor2WRCurrent),
             formula: "((A*256)+B - 32768) / 256",
             units: "mA",
@@ -621,7 +668,8 @@ struct OBDPIDLibrary {
         ),
         OBDPID(
             enabled: false,
-            name: "EVAP Purge Command",
+            label: "EVAP Cmd",
+            name: "Commanded EVAP Purge",
             pid: .mode1(.evaporativePurge),
             formula: "A * 100 / 255",
             units: "%",
@@ -632,7 +680,8 @@ struct OBDPIDLibrary {
         ),
         OBDPID(
             enabled: false,
-            name: "O₂ Sensor Voltage (Bank 1, Sensor 1)",
+            label: "O2V B1S1",
+            name: "O2 Sensor Voltage Bank 1 Sensor 1",
             pid: .mode1(.O2Bank1Sensor1),
             formula: "A / 200",
             units: "V",
@@ -643,7 +692,8 @@ struct OBDPIDLibrary {
         ),
         OBDPID(
             enabled: false,
-            name: "O₂ Sensor Voltage (Bank 1, Sensor 2)",
+            label: "O2V B1S2",
+            name: "O2 Sensor Voltage Bank 1 Sensor 2",
             pid: .mode1(.O2Bank1Sensor2),
             formula: "A / 200",
             units: "V",
@@ -654,7 +704,8 @@ struct OBDPIDLibrary {
         ),
         OBDPID(
             enabled: false,
-            name: "O₂ Sensor Voltage (Bank 1, Sensor 3)",
+            label: "O2V B1S3",
+            name: "O2 Sensor Voltage Bank 1 Sensor 3",
             pid: .mode1(.O2Bank1Sensor3),
             formula: "A / 200",
             units: "V",
@@ -665,7 +716,8 @@ struct OBDPIDLibrary {
         ),
         OBDPID(
             enabled: false,
-            name: "O₂ Sensor Voltage (Bank 1, Sensor 4)",
+            label: "O2V B1S4",
+            name: "O2 Sensor Voltage Bank 1 Sensor 4",
             pid: .mode1(.O2Bank1Sensor4),
             formula: "A / 200",
             units: "V",
@@ -676,7 +728,8 @@ struct OBDPIDLibrary {
         ),
         OBDPID(
             enabled: false,
-            name: "O₂ Sensor Voltage (Bank 2, Sensor 3)",
+            label: "O2V B2S3",
+            name: "O2 Sensor Voltage Bank 2 Sensor 3",
             pid: .mode1(.O2Bank2Sensor3),
             formula: "A / 200",
             units: "V",
@@ -687,7 +740,8 @@ struct OBDPIDLibrary {
         ),
         OBDPID(
             enabled: false,
-            name: "O₂ Sensors Present (Bitmap)",
+            label: "O2 Map",
+            name: "O2 Sensors Present (Bitfield)",
             pid: .mode1(.O2Sensor),
             formula: "bitfield",
             units: "NA",
@@ -702,6 +756,7 @@ struct OBDPIDLibrary {
 
         OBDPID(
             enabled: false,
+            label: "FuelType",
             name: "Fuel Type",
             pid: .mode1(.fuelType),
             formula: "categorical",
@@ -714,6 +769,7 @@ struct OBDPIDLibrary {
         ),
         OBDPID(
             enabled: false,
+            label: "OBD Comp",
             name: "OBD Compliance",
             pid: .mode1(.obdcompliance),
             formula: "categorical",
@@ -726,7 +782,8 @@ struct OBDPIDLibrary {
         ),
         OBDPID(
             enabled: false,
-            name: "Drive Cycle Status",
+            label: "DrvCycle",
+            name: "Monitor Status This Drive Cycle",
             pid: .mode1(.statusDriveCycle),
             formula: "bitfield",
             units: "NA",
@@ -738,6 +795,7 @@ struct OBDPIDLibrary {
         ),
         OBDPID(
             enabled: false,
+            label: "FreezeDTC",
             name: "Freeze DTC",
             pid: .mode1(.freezeDTC),
             formula: "DTC",
@@ -750,6 +808,7 @@ struct OBDPIDLibrary {
         ),
         OBDPID(
             enabled: false,
+            label: "Sec Air",
             name: "Secondary Air Status",
             pid: .mode1(.airStatus),
             formula: "categorical",
@@ -763,7 +822,8 @@ struct OBDPIDLibrary {
 
         OBDPID(
             enabled: false,
-            name: "EVAP System Vapor Pressure",
+            label: "EVAP VP",
+            name: "EVAP Vapor Pressure",
             pid: .mode1(.evapVaporPressure),
             formula: "((A*256)+B) - 32767",
             units: "Pa",
@@ -778,7 +838,8 @@ struct OBDPIDLibrary {
 
         OBDPID(
             enabled: false,
-            name: "GM Oil Pressure",
+            label: "GM Oil P",
+            name: "GM Engine Oil Pressure",
             pid: .GMmode22(.engineOilPressure),
             formula: "[psi]=A×0.578",
             units: "kPa",
@@ -788,7 +849,8 @@ struct OBDPIDLibrary {
         ),
         OBDPID(
             enabled: false,
-            name: "GM Oil Temp",
+            label: "GM Oil T",
+            name: "GM Engine Oil Temperature",
             pid: .GMmode22(.engineOilTemp),
             formula: "A - 40",
             units: "°C",
@@ -798,7 +860,8 @@ struct OBDPIDLibrary {
         ),
         OBDPID(
             enabled: false,
-            name: "GM AC High Pressure",
+            label: "GM AC HiP",
+            name: "GM A/C High Side Pressure",
             pid: .GMmode22(.ACHighPressure),
             formula: "PAC​[psig]=(A×1.83)−14.7",
             units: "kPa",
@@ -808,7 +871,8 @@ struct OBDPIDLibrary {
         ),
         OBDPID(
             enabled: false,
-            name: "GM Trans Fluid Temp",
+            label: "GM TransT",
+            name: "GM Transmission Fluid Temperature",
             pid: .GMmode22(.transFluidTemp),
             formula: "A - 40",
             units: "°C",
