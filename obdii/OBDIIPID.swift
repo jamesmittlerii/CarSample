@@ -250,7 +250,7 @@ struct OBDPIDLibrary {
         ),
         OBDPID(
             enabled: false,
-            label: "AFR Lam",
+            label: "AFR λ",
             name: "Commanded Equivalence Ratio (Lambda)",
             pid: .mode1(.commandedEquivRatio),
             formula: "((A*256)+B)/32768",

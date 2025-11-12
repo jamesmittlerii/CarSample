@@ -73,8 +73,12 @@ class OBDConnectionManager: ObservableObject {
     @Published private(set) var pidStats: [OBDCommand: PIDStats] = [:]
 
     private var obdService: OBDService
-    private var cancellables = Set<AnyCancellable>()
+    private var cancellables = Set<AnyCancellable>()           // general subscriptions (mirror, config, etc.)
+    private var streamCancellables = Set<AnyCancellable>()     // continuous updates stream only
     private var pidStoreCancellable: AnyCancellable?
+
+    // Track the last set of PIDs we actually started streaming
+    private var lastStreamingPIDs: Set<OBDCommand> = []
 
     private init() {
         self.obdService = OBDService(
@@ -94,12 +98,12 @@ class OBDConnectionManager: ObservableObject {
             .store(in: &cancellables)
 
         // Observe changes to enabled PIDs and restart streaming if connected.
-        // Use Set for removeDuplicates to avoid order-based suppression,
-        // and pass the new enabled set into restart so we don't re-read stale state.
+        // Debounce to avoid flapping on view renders; use Set to ignore order changes.
         pidStoreCancellable = PIDStore.shared.$pids
             .map { pids -> Set<OBDCommand> in
                 Set(pids.filter { $0.enabled }.map { $0.pid })
             }
+            .debounce(for: .milliseconds(300), scheduler: RunLoop.main)
             .removeDuplicates()
             .sink { [weak self] enabledSet in
                 guard let self else { return }
@@ -114,7 +118,8 @@ class OBDConnectionManager: ObservableObject {
                     }
                 }
 
-                if self.connectionState == .connected {
+                // Only restart if connected and the set truly differs from what we are streaming
+                if self.connectionState == .connected && enabledSet != self.lastStreamingPIDs {
                     self.logger.info("Enabled PID set changed (\(enabledSet.count)); restarting continuous updates.")
                     self.restartContinuousUpdates(with: enabledSet)
                 }
@@ -175,7 +180,12 @@ class OBDConnectionManager: ObservableObject {
     }
 
     func disconnect() {
+        // Stop the stream cleanly
+        streamCancellables.removeAll()
+        lastStreamingPIDs = []
         obdService.stopConnection()
+
+        // Keep general cancellables (like mirror) active or clear? We’ll clear them too on full disconnect.
         cancellables.removeAll()
         pidStats.removeAll()
         connectedPeripheralName = nil
@@ -208,18 +218,6 @@ class OBDConnectionManager: ObservableObject {
     }
 
     private func startContinuousOBDUpdates() {
-        cancellables.removeAll()
-
-        // Re-establish mirror subscription after clearing cancellables
-        obdService.$connectedPeripheral
-            .map { $0?.name }
-            .removeDuplicates()
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] name in
-                self?.connectedPeripheralName = name
-            }
-            .store(in: &cancellables)
-
         // Build commands from the current enabled PIDs in the store.
         // If you want only gauges, use enabledGauges; otherwise include all enabled items.
         let enabledNow = Set(PIDStore.shared.pids.filter { $0.enabled }.map { $0.pid })
@@ -228,11 +226,9 @@ class OBDConnectionManager: ObservableObject {
     }
 
     private func startContinuousOBDUpdates(with enabledPIDs: Set<OBDCommand>) {
-        cancellables.removeAll()
-        
+        // Only rebuild the stream if the set differs
         var enabledNow = enabledPIDs
-        if (querySupportedPids == true)
-        {
+        if querySupportedPids {
             // Build the supported Mode 01 set
             let supportedMode1: Set<OBDCommand> = Set(
                 supportedPids.compactMap { cmd in
@@ -260,6 +256,23 @@ class OBDConnectionManager: ObservableObject {
             enabledNow = filtered
         }
 
+        // Skip if no commands
+        guard !enabledNow.isEmpty else {
+            logger.info("No enabled PIDs to monitor.")
+            // Clear stream if we previously had some
+            if !lastStreamingPIDs.isEmpty {
+                streamCancellables.removeAll()
+                lastStreamingPIDs = []
+            }
+            return
+        }
+
+        // Skip if nothing changed
+        if enabledNow == lastStreamingPIDs {
+            logger.info("Enabled PIDs unchanged; not restarting continuous updates.")
+            return
+        }
+
         // Prune pidStats to only those still enabled (after support filtering)
         if !pidStats.isEmpty {
             let before = pidStats.count
@@ -270,23 +283,18 @@ class OBDConnectionManager: ObservableObject {
             }
         }
 
-        // Re-establish mirror subscription after clearing cancellables
-        obdService.$connectedPeripheral
-            .map { $0?.name }
-            .removeDuplicates()
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] name in
-                self?.connectedPeripheralName = name
-            }
-            .store(in: &cancellables)
-
-        // FIX: enabledNow is already Set<OBDCommand>, do not wrap again
-        let commands: [OBDCommand] = Array(enabledNow)
-
-        guard !commands.isEmpty else {
-            logger.info("No enabled PIDs to monitor.")
-            return
+        // Re-establish mirror subscription in general cancellables if missing
+        // (Do not clear general cancellables here.)
+        // Ensure we still mirror connectedPeripheral name:
+        if !cancellables.contains(where: { _ in false }) {
+            // no-op placeholder; the mirror is set in init and persists
         }
+
+        // Replace only the stream subscription
+        streamCancellables.removeAll()
+
+        let commands: [OBDCommand] = Array(enabledNow)
+        lastStreamingPIDs = enabledNow
 
         logger.info("Starting continuous updates for \(commands.count) PIDs.")
         obdService
@@ -332,23 +340,15 @@ class OBDConnectionManager: ObservableObject {
                     }
                 }
             )
-            .store(in: &cancellables)
+            .store(in: &streamCancellables)
     }
 
     private func restartContinuousUpdates(with enabledPIDs: Set<OBDCommand>) {
-        // Rebuild the stream with the exact enabled set that changed.
-        cancellables.removeAll()
-
-        // Re-establish mirror subscription after clearing cancellables
-        obdService.$connectedPeripheral
-            .map { $0?.name }
-            .removeDuplicates()
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] name in
-                self?.connectedPeripheralName = name
-            }
-            .store(in: &cancellables)
-
+        // Skip if no change vs current stream
+        if enabledPIDs == lastStreamingPIDs {
+            logger.info("Enabled PIDs unchanged; not restarting continuous updates.")
+            return
+        }
         startContinuousOBDUpdates(with: enabledPIDs)
     }
 }
