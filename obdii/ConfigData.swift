@@ -5,7 +5,7 @@ import Combine
 class ConfigData: ObservableObject {
     static let shared = ConfigData()
 
-    @AppStorage("units") var units: MeasurementUnit = .metric
+    @AppStorage("units") var units: MeasurementUnit =  (Locale.current.measurementSystem == .metric) ? .metric : .imperial
     @AppStorage("wifiHost") var wifiHost: String = "192.168.0.10"
     @AppStorage("wifiPort") var wifiPort: Int = 35000
     @AppStorage("autoConnectToOBD") var autoConnectToOBD: Bool = true

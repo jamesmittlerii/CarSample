@@ -186,11 +186,7 @@ struct OBDPID: Identifiable, Hashable, Codable {
     }
     
     func displayUnits(for measurementUnit: MeasurementUnit) -> String {
-        guard let baseUnits = units,
-              let metricTypical = typicalRange
-        else { return "" }
-        
-        return unitLabel(for: measurementUnit)
+        unitLabel(for: measurementUnit)
     }
 
     /// Returns a display string for UI, e.g. "600 – 7000 RPM", converted for the requested unit.
