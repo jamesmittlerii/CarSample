@@ -141,7 +141,7 @@ class CarPlayGaugesController {
         let rowElements: [CPListImageRowItemRowElement] = sensors.map { pid in
             let value = currentValue(for: pid)
             let image = drawGaugeImage(for: pid, value: value)
-            let subtitle = (value.map { String(format: "%.1f %@", $0, pid.units!) }) ?? "— \(pid.units!)"
+            let subtitle = value.map { pid.formattedValue($0, includeUnits: true) } ?? "— \(pid.units!)"
             return CPListImageRowItemRowElement(image: image, title: pid.label, subtitle: subtitle)
         }
 
@@ -164,15 +164,26 @@ class CarPlayGaugesController {
     private func updateSensorItems(for pid: OBDPID)  {
         var items: [CPInformationItem] = []
         let stats = connectionManager.stats(for: pid.pid)
-        items.append(CPInformationItem(title: "Current", detail: (stats.map { String(format: "%.2f %@", $0.latest.value, pid.units!) }) ?? "— \(pid.units!)"))
-        if let stats = stats {
-            items.append(CPInformationItem(title: "Min", detail: String(format: "%.2f %@", stats.min, pid.units!)))
-            items.append(CPInformationItem(title: "Max", detail: String(format: "%.2f %@", stats.max, pid.units!)))
-            items.append(CPInformationItem(title: "Samples", detail: "\(stats.sampleCount)"))
+
+        // Current
+        if let s = stats {
+            let currentStr = pid.formattedValue(s.latest.value, includeUnits: true)
+            items.append(CPInformationItem(title: "Current", detail: currentStr))
+        } else {
+            items.append(CPInformationItem(title: "Current", detail: "— \(pid.units!)"))
         }
 
-        items.append(CPInformationItem(title: "Units", detail: pid.units!))
-        items.append(CPInformationItem(title: "Typical Range", detail: String(format: "%.1f – %.1f %@", pid.typicalRange!.min, pid.typicalRange!.max, pid.units!)))
+        // Min/Max/Samples when stats are available
+        if let s = stats {
+            let minStr = pid.formattedValue(s.min, includeUnits: true)
+            let maxStr = pid.formattedValue(s.max, includeUnits: true)
+            items.append(CPInformationItem(title: "Min", detail: minStr))
+            items.append(CPInformationItem(title: "Max", detail: maxStr))
+            items.append(CPInformationItem(title: "Samples", detail: "\(s.sampleCount)"))
+        }
+
+       // Typical Range using the new displayRange helper
+        items.append(CPInformationItem(title: "Typical Range", detail: pid.displayRange))
 
         sensorItems = items
     }

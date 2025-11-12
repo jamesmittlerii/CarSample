@@ -95,8 +95,61 @@ struct OBDPID: Identifiable, Hashable, Codable {
     var displayRange: String {
         guard let range = typicalRange else { return "" }
         let unitLabel = units ?? "unknown"
-        
-        return String(format: "%.0f – %.0f %@", range.min, range.max, unitLabel)
+
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        let digits = preferredFractionDigits(forUnits: unitLabel)
+        formatter.minimumFractionDigits = digits
+        formatter.maximumFractionDigits = digits
+
+        let minStr = formatter.string(from: NSNumber(value: range.min)) ?? String(format: "%.\(digits)f", range.min)
+        let maxStr = formatter.string(from: NSNumber(value: range.max)) ?? String(format: "%.\(digits)f", range.max)
+
+        return "\(minStr) – \(maxStr) \(unitLabel)"
+    }
+
+    /// Formats a single value using the same units-aware fraction digit policy as displayRange.
+    /// - Parameters:
+    ///   - value: The numeric value to format.
+    ///   - includeUnits: Whether to append the units suffix.
+    /// - Returns: A formatted string like "725 RPM" or "13.80 V".
+    func formattedValue(_ value: Double, includeUnits: Bool = true) -> String {
+        let unitLabel = units ?? ""
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        let digits = preferredFractionDigits(forUnits: unitLabel)
+        formatter.minimumFractionDigits = digits
+        formatter.maximumFractionDigits = digits
+
+        let numberString = formatter.string(from: NSNumber(value: value)) ?? String(format: "%.\(digits)f", value)
+        if includeUnits, !unitLabel.isEmpty {
+            return "\(numberString) \(unitLabel)"
+        } else {
+            return numberString
+        }
+    }
+
+    /// Pick conventional fraction digits for the given units.
+    /// Adjust this mapping as needed for your domain.
+    private func preferredFractionDigits(forUnits units: String) -> Int {
+        switch units {
+        case "RPM":
+            return 0
+        case "°C":
+            return 0
+        case "%":
+            return 0
+        case "kPa":
+            return 0
+        case "V":
+            return 2
+        case "g/s":
+            return 2
+        case "λ":
+            return 2
+        default:
+            return 0
+        }
     }
 
     /// Returns a color representing the current value’s state
@@ -121,7 +174,6 @@ struct OBDPID: Identifiable, Hashable, Codable {
 /// Groups a set of standard OBD-II PIDs.
 struct OBDPIDLibrary {
     static let standard: [OBDPID] = [
-        
         OBDPID(
             enabled: true,
             label: "FuelStat",

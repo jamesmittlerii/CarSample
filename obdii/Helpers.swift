@@ -20,10 +20,10 @@ func collectLogs(since: TimeInterval = -300) async throws -> Data {
     let logStore = try OSLogStore(scope: .currentProcessIdentifier)
 
     // 2. Define a time range (e.g., last minute)
-    let oneMinAgo = logStore.position(date: Date().addingTimeInterval(since))
+    let logStart = logStore.position(date: Date().addingTimeInterval(since))
 
     // 3. Fetch all entries since that position
-    let allEntries = try logStore.getEntries(at: oneMinAgo)
+    let allEntries = try logStore.getEntries(at: logStart)
 
     // 4. Narrow to OSLogEntryLog first to ease type-checking
     let logEntries = allEntries.compactMap { $0 as? OSLogEntryLog }
