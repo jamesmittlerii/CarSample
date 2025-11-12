@@ -23,7 +23,7 @@ struct RootTabView: View {
 
             MILStatusView()
                 .tabItem {
-                    Image(systemName: "wrench.and.screwdriver")
+                    Image(systemName: "engine.combustion.fill")
                     Text("MIL")
                 }
 

@@ -27,7 +27,7 @@ struct DiagnosticsView: View {
                                             DTCDetailView(code: code)
                                         } label: {
                                             HStack(spacing: 12) {
-                                                Image(systemName: severitySymbolName(for: code.severity))
+                                                Image(systemName: imageName(for: code.severity))
                                                     .foregroundStyle(severityColor(code.severity))
                                                 VStack(alignment: .leading, spacing: 2) {
                                                     Text("\(code.code) • \(code.title)")
@@ -49,6 +49,8 @@ struct DiagnosticsView: View {
             .navigationTitle("DTCs")
         }
     }
+
+   
 }
 
 #Preview {

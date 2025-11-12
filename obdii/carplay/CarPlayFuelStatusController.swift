@@ -160,51 +160,5 @@ class CarPlayFuelStatusController {
 
     // MARK: - Helpers
 
-    private func symbolImage(named name: String) -> UIImage? {
-        return UIImage(systemName: name)
-    }
-
-    private func imageName(for severity: CodeSeverity) -> String {
-        switch severity {
-        case .low:       return "exclamationmark.circle"
-        case .moderate:  return "exclamationmark.triangle"
-        case .high:      return "bolt.trianglebadge.exclamationmark"
-        case .critical:  return "xmark.octagon"
-        }
-    }
-
-    private func severityColor(_ severity: CodeSeverity) -> UIColor {
-        switch severity {
-        case .low:
-            return .systemYellow
-        case .moderate:
-            return .systemOrange
-        case .high:
-            return .systemRed
-        case .critical:
-            return UIColor { traitCollection in
-                if traitCollection.userInterfaceStyle == .dark {
-                    // A brighter red for dark mode for better visibility
-                    return UIColor(red: 1.0, green: 0.3, blue: 0.25, alpha: 1.0)
-                } else {
-                    // The original dark red for light mode
-                    return UIColor(red: 0.85, green: 0.0, blue: 0.0, alpha: 1.0)
-                }
-            }
-        }
-    }
-
-    private func tintedSymbol(named name: String, severity: CodeSeverity) -> UIImage? {
-        guard let img = symbolImage(named: name) else { return nil }
-        return img.withTintColor(severityColor(severity), renderingMode: .alwaysOriginal)
-    }
-
-    private func severitySectionTitle(_ severity: CodeSeverity) -> String {
-        switch severity {
-        case .critical: return "Critical"
-        case .high:     return "High Severity"
-        case .moderate: return "Moderate"
-        case .low:      return "Low"
-        }
-    }
+    
 }

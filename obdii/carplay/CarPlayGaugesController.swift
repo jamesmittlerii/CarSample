@@ -167,7 +167,5 @@ class CarPlayGaugesController {
 
     // MARK: - Helpers
 
-    private func symbolImage(named name: String) -> UIImage? {
-        return UIImage(systemName: name)
-    }
+  
 }
