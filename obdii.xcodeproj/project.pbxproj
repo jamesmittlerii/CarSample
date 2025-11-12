@@ -33,6 +33,10 @@
 		D4D7C4932EBEBE0D00393ADF /* SwiftOBD2 in Frameworks */ = {isa = PBXBuildFile; productRef = D4D7C4922EBEBE0D00393ADF /* SwiftOBD2 */; };
 		D4D7C4952EBF9F9300393ADF /* CarPlayFuelStatusController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4D7C4942EBF9F9300393ADF /* CarPlayFuelStatusController.swift */; };
 		D4D7C4972EC00D6000393ADF /* CarPlayMILStatusController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4D7C4962EC00D6000393ADF /* CarPlayMILStatusController.swift */; };
+		D4F91FC92EC53A5D00443347 /* GaugesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4F91FC82EC53A5D00443347 /* GaugesView.swift */; };
+		D4F91FCB2EC53A5F00443347 /* GaugeDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4F91FCA2EC53A5F00443347 /* GaugeDetailView.swift */; };
+		D4F91FCD2EC53B2000443347 /* DiagnosticsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4F91FCC2EC53B2000443347 /* DiagnosticsView.swift */; };
+		D4F91FCF2EC53B2300443347 /* DTCDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4F91FCE2EC53B2300443347 /* DTCDetailView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -85,6 +89,10 @@
 		D4D045212EBAA14100F80BCF /* CarPlaySettingsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarPlaySettingsController.swift; sourceTree = "<group>"; };
 		D4D7C4942EBF9F9300393ADF /* CarPlayFuelStatusController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarPlayFuelStatusController.swift; sourceTree = "<group>"; };
 		D4D7C4962EC00D6000393ADF /* CarPlayMILStatusController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarPlayMILStatusController.swift; sourceTree = "<group>"; };
+		D4F91FC82EC53A5D00443347 /* GaugesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GaugesView.swift; sourceTree = "<group>"; };
+		D4F91FCA2EC53A5F00443347 /* GaugeDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GaugeDetailView.swift; sourceTree = "<group>"; };
+		D4F91FCC2EC53B2000443347 /* DiagnosticsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticsView.swift; sourceTree = "<group>"; };
+		D4F91FCE2EC53B2300443347 /* DTCDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DTCDetailView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -162,6 +170,10 @@
 				D4D045212EBAA14100F80BCF /* CarPlaySettingsController.swift */,
 				D474B5922EBD21B300309D63 /* PIDStore.swift */,
 				D474B5942EBD21D200309D63 /* PIDToggleListView.swift */,
+				D4F91FC82EC53A5D00443347 /* GaugesView.swift */,
+				D4F91FCA2EC53A5F00443347 /* GaugeDetailView.swift */,
+				D4F91FCC2EC53B2000443347 /* DiagnosticsView.swift */,
+				D4F91FCE2EC53B2300443347 /* DTCDetailView.swift */,
 			);
 			path = obdii;
 			sourceTree = "<group>";
@@ -332,18 +344,22 @@
 				D4D7C4972EC00D6000393ADF /* CarPlayMILStatusController.swift in Sources */,
 				D43E332D2EB9581400752784 /* SettingsView.swift in Sources */,
 				D4D045222EBAA14100F80BCF /* CarPlaySettingsController.swift in Sources */,
+				D4F91FC92EC53A5D00443347 /* GaugesView.swift in Sources */,
 				D4C95C2C2EB904A300364CB6 /* OBDII.swift in Sources */,
 				D4D0451E2EBAA13B00F80BCF /* CarPlayGaugesController.swift in Sources */,
+				D4F91FCD2EC53B2000443347 /* DiagnosticsView.swift in Sources */,
 				D43E332A2EB9568F00752784 /* ConfigData.swift in Sources */,
 				D4D7C4952EBF9F9300393ADF /* CarPlayFuelStatusController.swift in Sources */,
 				CBAD9E9724A3E3DD00989CA4 /* AppDelegate.swift in Sources */,
 				D474B5952EBD21D200309D63 /* PIDToggleListView.swift in Sources */,
 				D4D0451A2EBA9FF600F80BCF /* SettingsViewModel.swift in Sources */,
 				D4A659F02EB95E5100E1A1C9 /* OBDConnectionManager.swift in Sources */,
+				D4F91FCF2EC53B2300443347 /* DTCDetailView.swift in Sources */,
 				CBAD9ECA24A3E3FE00989CA4 /* CarPlaySceneDelegate.swift in Sources */,
 				CBAD9E9924A3E3DD00989CA4 /* SceneDelegate.swift in Sources */,
 				D474B5932EBD21B300309D63 /* PIDStore.swift in Sources */,
 				D4D045202EBAA14000F80BCF /* CarPlayDiagnosticsController.swift in Sources */,
+				D4F91FCB2EC53A5F00443347 /* GaugeDetailView.swift in Sources */,
 				D4C95C302EB9352600364CB6 /* OBDIIPID.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
