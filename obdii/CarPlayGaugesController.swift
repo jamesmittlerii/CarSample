@@ -173,7 +173,8 @@ class CarPlayGaugesController {
         let rowElements: [CPListImageRowItemRowElement] = sensors.map { pid in
             let measurement = currentMeasurement(for: pid)
             let image = drawGaugeImage(for: pid, measurement: measurement)
-            let subtitle = measurement.map { pid.formatted(measurement: $0, includeUnits: true) } ?? "— \(pid.units!)"
+           // let subtitle = measurement.map { pid.formatted(measurement: $0, includeUnits: true) } ?? "— \(pid.units!)"
+            let subtitle = measurement.map { pid.formatted(measurement: $0, includeUnits: true) } ??  "— \(pid.displayUnits)"
             return CPListImageRowItemRowElement(image: image, title: pid.label, subtitle: subtitle)
         }
 
@@ -202,7 +203,7 @@ class CarPlayGaugesController {
             let currentStr = pid.formatted(measurement: s.latest, includeUnits: true)
             items.append(CPInformationItem(title: "Current", detail: currentStr))
         } else {
-            items.append(CPInformationItem(title: "Current", detail: "— \(pid.units!)"))
+            items.append(CPInformationItem(title: "Current", detail: "— \(pid.displayUnits)"))
         }
 
         // Min/Max/Samples when stats are available

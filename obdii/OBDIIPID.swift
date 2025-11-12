@@ -184,6 +184,14 @@ struct OBDPID: Identifiable, Hashable, Codable {
     func dangerRange(for measurementUnit: MeasurementUnit) -> ValueRange? {
         converted(range: dangerRange, for: measurementUnit)
     }
+    
+    func displayUnits(for measurementUnit: MeasurementUnit) -> String {
+        guard let baseUnits = units,
+              let metricTypical = typicalRange
+        else { return "" }
+        
+        return unitLabel(for: measurementUnit)
+    }
 
     /// Returns a display string for UI, e.g. "600 – 7000 RPM", converted for the requested unit.
     func displayRange(for measurementUnit: MeasurementUnit) -> String {
@@ -295,6 +303,9 @@ struct OBDPID: Identifiable, Hashable, Codable {
 
     // Backward-compatible versions that default to the app's configured units
 
+    var displayUnits: String {
+        displayUnits(for: ConfigData.shared.units)
+    }
     /// Returns a display string for UI, e.g. "600 – 7000 RPM"
     var displayRange: String {
         displayRange(for: ConfigData.shared.units)
