@@ -15,17 +15,17 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        // Create the SwiftUI settings view
-        let settingsView = SettingsView()
+        // Create the SwiftUI root tab view
+        let rootView = RootTabView()
         
         // Use a UIHostingController to embed the SwiftUI view within this UIKit view controller
-        let hostingController = UIHostingController(rootView: settingsView)
+        let hostingController = UIHostingController(rootView: rootView)
         
         // Add the hosting controller as a child
         addChild(hostingController)
         view.addSubview(hostingController.view)
         
-        // Set up constraints to make the settings view fill the screen
+        // Set up constraints to make the view fill the screen
         hostingController.view.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
             hostingController.view.topAnchor.constraint(equalTo: view.topAnchor),
