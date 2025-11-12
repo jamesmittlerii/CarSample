@@ -6,12 +6,44 @@ import UIKit   // For UIImage
 
 /// Draws a gauge-style ring image for a given PID value.
 /// This function is scoped to this file as it's only used for the gauges UI.
-fileprivate func drawGaugeImage(for pid: OBDPID, value: Double?, size: CGSize = CPListImageRowItemElement.maximumImageSize) -> UIImage {
-    // Build a combined range so normalization (when needed) respects all defined ranges
-    let ranges: [ValueRange] = [pid.typicalRange, pid.warningRange, pid.dangerRange].compactMap { $0 }
-    let globalMin = ranges.map(\.min).min() ?? pid.typicalRange!.min
-    let globalMax = ranges.map(\.max).max() ?? pid.typicalRange!.max
-    let combinedRange = ValueRange(min: globalMin, max: globalMax)
+fileprivate func drawGaugeImage(for pid: OBDPID, measurement: MeasurementResult?, size: CGSize = CPListImageRowItemElement.maximumImageSize) -> UIImage {
+    // Helper: map Foundation.Unit to our MeasurementUnit for range conversion/color thresholds
+    func measurementUnit(from unit: Unit) -> MeasurementUnit {
+        switch unit {
+        case is UnitTemperature:
+            return unit == UnitTemperature.fahrenheit ? .imperial : .metric
+        case is UnitSpeed:
+            return unit == UnitSpeed.milesPerHour ? .imperial : .metric
+        case is UnitPressure:
+            if unit == UnitPressure.poundsForcePerSquareInch { return .imperial }
+            return .metric
+        case is UnitLength:
+            return unit == UnitLength.miles ? .imperial : .metric
+        default:
+            // For units without a metric/imperial distinction, assume metric canonical
+            return .metric
+        }
+    }
+
+    // Build a combined range in the PID's canonical (metric) units first
+    let metricRanges: [ValueRange] = [pid.typicalRange, pid.warningRange, pid.dangerRange].compactMap { $0 }
+    // Fallback typical (should exist for gauges, but guard anyway)
+    let fallbackTypical = pid.typicalRange ?? ValueRange(min: 0, max: 1)
+    let metricMin = metricRanges.map(\.min).min() ?? fallbackTypical.min
+    let metricMax = metricRanges.map(\.max).max() ?? fallbackTypical.max
+    var combinedRange = ValueRange(min: metricMin, max: metricMax)
+
+    // If we have a measurement, convert the combined range to the measurement’s unit system when appropriate
+    var colorUnitSystem: MeasurementUnit = ConfigData.shared.units
+    if let m = measurement {
+        let sys = measurementUnit(from: m.unit)
+        colorUnitSystem = sys
+        if let baseUnits = pid.units {
+            combinedRange = combinedRange.converted(from: baseUnits, to: sys)
+        }
+    }
+
+    let value = measurement?.value
 
     let format = UIGraphicsImageRendererFormat.default()
     format.opaque = false
@@ -42,11 +74,11 @@ fileprivate func drawGaugeImage(for pid: OBDPID, value: Double?, size: CGSize = 
             return
         }
 
-        // Normalize/clamp the progress only when we have a real value
+        // Normalize/clamp the progress against the combined range (now aligned with the measurement’s unit system if present)
         let clampedNormalized = max(0.0, min(1.0, combinedRange.normalizedPosition(for: actualValue)))
 
-        // Determine color for the current value and convert to UIColor
-        let uiColor = UIColor(pid.color(for: actualValue))
+        // Determine color for the current value using the same unit system as the measurement (or app default)
+        let uiColor = UIColor(pid.color(for: actualValue, unit: colorUnitSystem))
 
         // Progress arc
         let progressEndAngle = startAngle + (sweepAngle * CGFloat(clampedNormalized))
@@ -140,7 +172,7 @@ class CarPlayGaugesController {
 
         let rowElements: [CPListImageRowItemRowElement] = sensors.map { pid in
             let measurement = currentMeasurement(for: pid)
-            let image = drawGaugeImage(for: pid, value: measurement?.value)
+            let image = drawGaugeImage(for: pid, measurement: measurement)
             let subtitle = measurement.map { pid.formatted(measurement: $0, includeUnits: true) } ?? "— \(pid.units!)"
             return CPListImageRowItemRowElement(image: image, title: pid.label, subtitle: subtitle)
         }
