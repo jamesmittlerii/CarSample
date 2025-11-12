@@ -103,7 +103,7 @@ class OBDConnectionManager: ObservableObject {
             .map { pids -> Set<OBDCommand> in
                 Set(pids.filter { $0.enabled }.map { $0.pid })
             }
-            .debounce(for: .milliseconds(300), scheduler: RunLoop.main)
+            //.debounce(for: .milliseconds(300), scheduler: RunLoop.main)
             .removeDuplicates()
             .sink { [weak self] enabledSet in
                 guard let self else { return }
@@ -118,9 +118,9 @@ class OBDConnectionManager: ObservableObject {
                     }
                 }
 
-                // Only restart if connected and the set truly differs from what we are streaming
-                if self.connectionState == .connected && enabledSet != self.lastStreamingPIDs {
-                    self.logger.info("Enabled PID set changed (\(enabledSet.count)); restarting continuous updates.")
+                // Only restart if connected; equality/no-change is handled inside restart/start
+                if self.connectionState == .connected {
+                    self.logger.info("Enabled PID set changed (\(enabledSet.count)); requesting restart of continuous updates.")
                     self.restartContinuousUpdates(with: enabledSet)
                 }
             }
