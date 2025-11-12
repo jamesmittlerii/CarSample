@@ -2,38 +2,6 @@ import SwiftUI
 import SwiftOBD2
 import Combine
 
-private func severitySymbolName(for severity: CodeSeverity) -> String {
-    switch severity {
-    case .low:       return "exclamationmark.circle"
-    case .moderate:  return "exclamationmark.triangle"
-    case .high:      return "bolt.trianglebadge.exclamationmark"
-    case .critical:  return "xmark.octagon"
-    }
-}
-
-private func severityColor(_ severity: CodeSeverity) -> Color {
-    switch severity {
-    case .low:
-        return .yellow
-    case .moderate:
-        return .orange
-    case .high:
-        return .red
-    case .critical:
-        // Slightly different red for emphasis
-        return Color(red: 0.85, green: 0.0, blue: 0.0)
-    }
-}
-
-private func severitySectionTitle(_ severity: CodeSeverity) -> String {
-    switch severity {
-    case .critical: return "Critical"
-    case .high:     return "High Severity"
-    case .moderate: return "Moderate"
-    case .low:      return "Low"
-    }
-}
-
 struct DiagnosticsView: View {
     @StateObject private var connectionManager = OBDConnectionManager.shared
 

@@ -26,6 +26,12 @@ struct RootTabView: View {
                     Image(systemName: "wrench.and.screwdriver")
                     Text("MIL")
                 }
+
+            DiagnosticsView()
+                .tabItem {
+                    Image(systemName: "wrench.and.screwdriver")
+                    Text("DTCs")
+                }
         }
     }
 }
