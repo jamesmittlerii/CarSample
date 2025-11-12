@@ -209,13 +209,29 @@ struct SettingsView: View {
     // MARK: - Share Logs (UIKit)
 
     #if canImport(UIKit)
+    private func sanitizedFilename(from raw: String) -> String {
+        // Allow alphanumerics, space, dash, underscore, and dot; replace others with "-"
+        let allowed = CharacterSet.alphanumerics.union(.whitespaces).union(CharacterSet(charactersIn: "-_."))
+        let replaced = raw.unicodeScalars.map { allowed.contains($0) ? Character($0) : "-" }
+        // Collapse repeated dashes and trim spaces
+        let interim = String(replaced)
+            .replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
+            .replacingOccurrences(of: "-{2,}", with: "-", options: .regularExpression)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        // Avoid empty names
+        return interim.isEmpty ? "App" : interim
+    }
+
     private func shareLogs_iOS() async {
         isGeneratingLogs = true
         defer { isGeneratingLogs = false }
 
         do {
             let data = try await collectLogs(since: -300) // last 5 minutes
-            let tempURL = try writeToTemporaryFile(data: data, suggestedName: "RheosoftOBD2-logs.json")
+            let base = aboutDetailString()
+            let safeBase = sanitizedFilename(from: base)
+            let suggested = "\(safeBase)-logs.json"
+            let tempURL = try writeToTemporaryFile(data: data, suggestedName: suggested)
             shareItems = [tempURL]
             isPresentingShare = true
         } catch {
