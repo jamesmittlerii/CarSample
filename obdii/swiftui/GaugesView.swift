@@ -42,12 +42,9 @@ private struct GaugeTile: View {
     }
 
     var body: some View {
-        VStack(spacing: 8) {
-            // Gauge image
-            let img = drawGaugeImage(for: pid, measurement: measurement, size: CGSize(width: 120, height: 120))
-            Image(uiImage: img)
-                .resizable()
-                .aspectRatio(contentMode: .fit)
+        VStack(spacing: 0) {
+            // SwiftUI gauge view replacing the UIImage-based drawing for app UI
+            RingGaugeView(pid: pid, measurement: measurement)
                 .frame(width: 120, height: 120)
 
             // Title
@@ -55,13 +52,8 @@ private struct GaugeTile: View {
                 .font(.headline)
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
+                .padding(.top,2)
 
-            // Subtitle: current formatted or placeholder with units
-            Text(subtitleText())
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-                .lineLimit(1)
-                .minimumScaleFactor(0.8)
         }
         .padding(12)
         .background(
