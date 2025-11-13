@@ -13,7 +13,7 @@ struct GaugesView: View {
     ]
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ScrollView {
                 LazyVGrid(columns: columns, spacing: 16) {
                     ForEach(pidStore.enabledGauges, id: \.id) { pid in
@@ -42,7 +42,7 @@ private struct GaugeTile: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
+        VStack(spacing: 2) {
             // SwiftUI gauge view replacing the UIImage-based drawing for app UI
             RingGaugeView(pid: pid, measurement: measurement)
                 .frame(width: 120, height: 120)
@@ -52,7 +52,6 @@ private struct GaugeTile: View {
                 .font(.headline)
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
-                .padding(.top,2)
 
         }
         .padding(12)
