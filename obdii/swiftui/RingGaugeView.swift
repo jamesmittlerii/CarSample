@@ -54,6 +54,57 @@ struct RingGaugeView: View {
         }
     }
 
+    // Unified splitter
+    private enum SplitPart { case first, second }
+
+    private func splitDisplayText(_ part: SplitPart) -> String {
+        let s = displayText
+        guard let idx = s.firstIndex(of: " ") else {
+            // No space: treat whole string as first part
+            if part == .first {
+                // Try to strip grouping if it's a number
+                let nf = NumberFormatter()
+                nf.numberStyle = .decimal
+                if let number = nf.number(from: s) {
+                    let out = NumberFormatter()
+                    out.numberStyle = .decimal
+                    out.usesGroupingSeparator = false
+                    // Preserve any decimals present by inferring fraction digits from input formatter
+                    out.minimumFractionDigits = nf.minimumFractionDigits
+                    out.maximumFractionDigits = nf.maximumFractionDigits
+                    return out.string(from: number) ?? s
+                }
+                return s
+            } else {
+                return ""
+            }
+        }
+
+        switch part {
+        case .first:
+            let firstPart = String(s[..<idx])
+
+            // If firstPart is a number, remove grouping separators
+            let nf = NumberFormatter()
+            nf.numberStyle = .decimal
+            if let number = nf.number(from: firstPart) {
+                let out = NumberFormatter()
+                out.numberStyle = .decimal
+                out.usesGroupingSeparator = false
+                // Keep a reasonable fraction digit policy: infer from input token
+                out.minimumFractionDigits = nf.minimumFractionDigits
+                out.maximumFractionDigits = nf.maximumFractionDigits
+                return out.string(from: number) ?? firstPart
+            }
+            return firstPart
+
+        case .second:
+            return String(s[s.index(after: idx)...])
+        }
+    }
+    private var displayFirstLine: String { splitDisplayText(.first) }
+    private var displaySecondLine: String { splitDisplayText(.second) }
+
     var body: some View {
         GeometryReader { proxy in
             let size = proxy.size
@@ -87,12 +138,17 @@ struct RingGaugeView: View {
 
                 // Center readout
                 VStack(spacing: 4) {
-                    Text(displayText)
+                    Text(displayFirstLine)
                         .font(.headline.monospacedDigit())
                         .minimumScaleFactor(0.6)
                         .lineLimit(1)
+                    Text(displaySecondLine)
+                        .font(.subheadline.monospacedDigit())
+                        .minimumScaleFactor(0.6)
+                        .lineLimit(1)
+                    
                 }
-                .padding(lineWidth * 0.2)
+                .padding(0)
             }
             .frame(width: size.width, height: size.height)
         }
@@ -204,4 +260,20 @@ private struct TickShape: Shape {
 
 private extension Double {
     var clamped01: Double { max(0.0, min(1.0, self)) }
+}
+
+#Preview("With Value") {
+    let pid = OBDPIDLibrary.standard.first { $0.label == "RPM" }!
+    // Example RPM value using your custom Unit.rpm
+    let measurement = MeasurementResult(value: 2500, unit: Unit(symbol: "rpm"))
+    RingGaugeView(pid: pid, measurement: measurement)
+        .frame(width: 200, height: 200)
+        .padding()
+}
+
+#Preview("No Value") {
+    let pid = OBDPIDLibrary.standard.first { $0.label == "Coolant" }!
+     RingGaugeView(pid: pid, measurement: nil)
+        .frame(width: 200, height: 200)
+        .padding()
 }
