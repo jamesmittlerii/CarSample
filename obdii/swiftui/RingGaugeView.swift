@@ -68,9 +68,9 @@ struct RingGaugeView: View {
                     .stroke(Color(UIColor.systemGray3), style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
 
                 // Background bands (typical/warn/danger)
-                band(typicalBand, color: .green, lineWidth: lineWidth)
-                band(warnBand, color: .yellow, lineWidth: lineWidth)
-                band(dangerBand, color: .red, lineWidth: lineWidth)
+                //band(typicalBand, color: .green, lineWidth: lineWidth)
+                //band(warnBand, color: .yellow, lineWidth: lineWidth)
+                //band(dangerBand, color: .red, lineWidth: lineWidth)
 
                 // Ticks
                 //ticks(count: tickCount, radius: radius, lineWidth: lineWidth, color: Color(UIColor.systemGray))

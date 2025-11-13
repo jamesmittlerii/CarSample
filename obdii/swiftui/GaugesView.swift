@@ -42,7 +42,7 @@ private struct GaugeTile: View {
     }
 
     var body: some View {
-        VStack(spacing: 2) {
+        VStack(spacing: 0) {
             // SwiftUI gauge view replacing the UIImage-based drawing for app UI
             RingGaugeView(pid: pid, measurement: measurement)
                 .frame(width: 120, height: 120)
