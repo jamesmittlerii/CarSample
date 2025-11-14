@@ -3,26 +3,24 @@ import UIKit
 import SwiftOBD2
 import Combine
 
-
 @MainActor
 class CarPlayMILStatusController {
     private weak var interfaceController: CPInterfaceController?
     private var currentTemplate: CPListTemplate?
-    private let connectionManager: OBDConnectionManager
+    private let viewModel: MILStatusViewModel
     private var cancellables = Set<AnyCancellable>()
     private var previousMILStatus: Status?
     
     init(connectionManager: OBDConnectionManager) {
-        self.connectionManager = connectionManager
-        
-       
+        // Use the shared ViewModel logic for MIL status
+        self.viewModel = MILStatusViewModel(connectionManager: connectionManager)
     }
 
     func setInterfaceController(_ interfaceController: CPInterfaceController) {
         self.interfaceController = interfaceController
         
-        // Observe connection state changes to keep the UI in sync
-        OBDConnectionManager.shared.$MILStatus
+        // Observe ViewModel changes to keep the UI in sync
+        viewModel.$status
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
                 self?.refreshSection()
@@ -37,39 +35,21 @@ class CarPlayMILStatusController {
     }
     
     private func buildSections() -> [CPListSection] {
-        let current = OBDConnectionManager.shared.MILStatus
-        var items: [CPListItem] = []
-
-        guard let status = current else {
-            items.append(makeItem("No MIL Status", detailText: ""))
-            let section = CPListSection(items: items)
+        guard let status = viewModel.status else {
+            let item = makeItem("No MIL Status", detailText: "")
+            let section = CPListSection(items: [item])
             return [section]
         }
+
+        var items: [CPListItem] = []
 
         // Top-level flags/values
         let dtcLabel = "\(status.dtcCount) DTC" + (status.dtcCount == 1 ? "" : "s")
         let milLabel = status.milOn ? "On" : "Off"
         items.append(makeItem("MIL", detailText: "\(milLabel) (\(dtcLabel))"))
         
-        // Readiness monitors: filter to supported, then sort so Not Ready first, Ready next, unknown last
-        let supported = status.monitors.filter { $0.supported }
-        let sorted = supported.sorted { lhs, rhs in
-            // Map ready state to priority: Not Ready (false) = 0, Ready (true) = 1, Unknown (nil) = 2
-            func priority(for ready: Bool?) -> Int {
-                switch ready {
-                case .some(false): return 0
-                case .some(true):  return 1
-                case .none:        return 2
-                }
-            }
-            let lp = priority(for: lhs.ready)
-            let rp = priority(for: rhs.ready)
-            if lp != rp { return lp < rp }
-            // Stable fallback by name to keep order deterministic
-            return lhs.name.localizedCaseInsensitiveCompare(rhs.name) == .orderedAscending
-        }
-        
-        for monitor in sorted {
+        // Readiness monitors: use the same sorting/grouping logic as the SwiftUI ViewModel
+        for monitor in viewModel.sortedSupportedMonitors {
             let detail: String
             if let ready = monitor.ready {
                 detail = ready ? "Ready" : "Not Ready"
@@ -86,7 +66,7 @@ class CarPlayMILStatusController {
     private func refreshSection() {
         guard let template = currentTemplate else { return }
         
-        let current = OBDConnectionManager.shared.MILStatus
+        let current = viewModel.status
         
         // Early exit if nothing changed
         if let previous = previousMILStatus, previous == current {
@@ -99,7 +79,7 @@ class CarPlayMILStatusController {
         template.updateSections(sections)
     }
 
-    /// Creates the root template for the Settings tab.
+    /// Creates the root template for the MIL tab.
     func makeRootTemplate() -> CPListTemplate {
         let sections = buildSections()
         let template = CPListTemplate(title: "MILStatus", sections: sections)
@@ -108,15 +88,10 @@ class CarPlayMILStatusController {
         self.currentTemplate = template
         
         // Initialize previous snapshot to match what we just rendered
-        previousMILStatus = OBDConnectionManager.shared.MILStatus
+        previousMILStatus = viewModel.status
         
         return template
     }
     
-    
-
     // MARK: - Helpers
-
-   
 }
-

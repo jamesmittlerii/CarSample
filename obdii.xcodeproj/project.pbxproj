@@ -51,6 +51,7 @@
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		D4D4D58B2EC7823E00D4623D /* core */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = core; sourceTree = "<group>"; };
+		D4D4D6862EC7A85900D4623D /* viewmodels */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = viewmodels; sourceTree = "<group>"; };
 		D4FE92C02EC541E000C061D7 /* carplay */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = carplay; sourceTree = "<group>"; };
 		D4FE92C12EC5420100C061D7 /* swiftui */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = swiftui; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -106,6 +107,7 @@
 		CBAD9E9524A3E3DD00989CA4 /* obdii */ = {
 			isa = PBXGroup;
 			children = (
+				D4D4D6862EC7A85900D4623D /* viewmodels */,
 				D4D4D58B2EC7823E00D4623D /* core */,
 				D4FE92C12EC5420100C061D7 /* swiftui */,
 				D4FE92C02EC541E000C061D7 /* carplay */,
@@ -161,6 +163,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				D4D4D58B2EC7823E00D4623D /* core */,
+				D4D4D6862EC7A85900D4623D /* viewmodels */,
 				D4FE92C02EC541E000C061D7 /* carplay */,
 				D4FE92C12EC5420100C061D7 /* swiftui */,
 			);
