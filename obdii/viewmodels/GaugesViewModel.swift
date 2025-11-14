@@ -24,6 +24,7 @@ final class GaugesViewModel: ObservableObject {
 
         // Rebuild tiles whenever enabled PIDs or live stats change
         Publishers.CombineLatest(pidStore.$pids, connectionManager.$pidStats)
+            .throttle(for: .seconds(1), scheduler: DispatchQueue.main, latest: true)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] pids, stats in
                 self?.rebuildTiles(pids: pids, stats: stats)

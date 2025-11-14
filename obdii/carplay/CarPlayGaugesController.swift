@@ -8,6 +8,7 @@ import UIKit   // For UIImage
 class CarPlayGaugesController {
     private weak var interfaceController: CPInterfaceController?
     private let connectionManager: OBDConnectionManager
+    private let viewModel: GaugesViewModel
     private var currentTemplate: CPListTemplate?
     private var sensorItems: [CPInformationItem] = []
     private var cancellables = Set<AnyCancellable>()
@@ -19,13 +20,15 @@ class CarPlayGaugesController {
     
     init(connectionManager: OBDConnectionManager) {
         self.connectionManager = connectionManager
+        // Construct the gauges view model on the MainActor
+        self.viewModel = GaugesViewModel(connectionManager: connectionManager, pidStore: PIDStore.shared)
     }
 
     func setInterfaceController(_ interfaceController: CPInterfaceController) {
         self.interfaceController = interfaceController
         
-        // Subscribe to PID stats updates and notify the gauges controller to refresh
-        connectionManager.$pidStats
+        // Subscribe to tiles updates (enabled PIDs + latest measurements) and refresh the list
+        viewModel.$tiles
             .throttle(for: .seconds(1), scheduler: DispatchQueue.main, latest: true)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
@@ -33,9 +36,8 @@ class CarPlayGaugesController {
             }
             .store(in: &cancellables)
         
-        // NEW: Refresh gauges when the enabled PID set changes (e.g., toggled in Settings)
-        PIDStore.shared.$pids
-            .map { pids in pids.filter { $0.enabled }.map { $0.id } }
+        // Also refresh when units change so displayUnits/displayRange update
+        ConfigData.shared.$unitsPublished
             .removeDuplicates()
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
@@ -70,22 +72,18 @@ class CarPlayGaugesController {
     }
     
     private func buildSections() -> [CPListSection]  {
-        // Use the live enabled PID list from the store so toggles reflect here
-        let sensors = PIDStore.shared.enabledGauges
+        let tiles = viewModel.tiles
         
         // No gauges → single info row
-        if sensors.isEmpty {
+        if tiles.isEmpty {
             let item = makeItem("No Enabled Gauges", detailText: nil)
             let section = CPListSection(items: [item])
             return [section]
         }
 
-        func currentMeasurement(for pid: OBDPID) -> MeasurementResult? {
-            return connectionManager.stats(for: pid.pid)?.latest
-        }
-
-        let rowElements: [CPListImageRowItemRowElement] = sensors.map { pid in
-            let measurement = currentMeasurement(for: pid)
+        let rowElements: [CPListImageRowItemRowElement] = tiles.map { tile in
+            let pid = tile.pid
+            let measurement = tile.measurement
             let image = drawGaugeImage(for: pid, measurement: measurement, size: CPListImageRowItemElement.maximumImageSize)
             let subtitle = measurement.map { pid.formatted(measurement: $0, includeUnits: true) } ??  "— \(pid.displayUnits)"
             return CPListImageRowItemRowElement(image: image, title: pid.label, subtitle: subtitle)
@@ -95,11 +93,16 @@ class CarPlayGaugesController {
         item.handler = { _, completion in completion() }
 
         item.listImageRowHandler = { [weak self] _, index, completion in
-            guard let self = self, index >= 0 && index < sensors.count else {
+            guard let self = self else {
                 completion()
                 return
             }
-            let tappedPID = sensors[index]
+            let tiles = self.viewModel.tiles
+            guard index >= 0 && index < tiles.count else {
+                completion()
+                return
+            }
+            let tappedPID = tiles[index].pid
             self.presentSensorTemplate(for: tappedPID)
             completion()
         }
@@ -128,7 +131,7 @@ class CarPlayGaugesController {
             items.append(CPInformationItem(title: "Samples", detail: "\(s.sampleCount)"))
         }
 
-       // Typical Range using the new displayRange helper
+        // Typical Range using the unit-aware helper
         items.append(CPInformationItem(title: "Typical Range", detail: pid.displayRange))
 
         sensorItems = items
@@ -147,7 +150,7 @@ class CarPlayGaugesController {
 
         interfaceController?.pushTemplate(template, animated: false, completion: nil)
         
-        // Live updates for this PID: update items in place
+        // Live updates for this PID: update items in place (use connectionManager for min/max/sampleCount)
         currentDetailCancellable = connectionManager.$pidStats
             .compactMap { statsDict -> OBDConnectionManager.PIDStats? in
                 statsDict[pid.pid]
@@ -166,6 +169,4 @@ class CarPlayGaugesController {
     }
 
     // MARK: - Helpers
-
-  
 }
