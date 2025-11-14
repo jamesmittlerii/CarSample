@@ -9,7 +9,6 @@ class CarPlayMILStatusController {
     private var currentTemplate: CPListTemplate?
     private let viewModel: MILStatusViewModel
     private var cancellables = Set<AnyCancellable>()
-    private var previousMILStatus: Status?
     
     init(connectionManager: OBDConnectionManager) {
         // Use the shared ViewModel logic for MIL status
@@ -65,17 +64,7 @@ class CarPlayMILStatusController {
 
     private func refreshSection() {
         guard let template = currentTemplate else { return }
-        
-        let current = viewModel.status
-        
-        // Early exit if nothing changed
-        if let previous = previousMILStatus, previous == current {
-            return
-        }
-        
-        // Update UI and remember last shown state
         let sections = buildSections()
-        previousMILStatus = current
         template.updateSections(sections)
     }
 
@@ -86,10 +75,6 @@ class CarPlayMILStatusController {
         template.tabTitle = "MIL"
         template.tabImage = symbolImage(named: "wrench.and.screwdriver")
         self.currentTemplate = template
-        
-        // Initialize previous snapshot to match what we just rendered
-        previousMILStatus = viewModel.status
-        
         return template
     }
     

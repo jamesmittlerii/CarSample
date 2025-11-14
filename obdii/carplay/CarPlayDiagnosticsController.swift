@@ -7,20 +7,19 @@ import Combine
 class CarPlayDiagnosticsController {
     private weak var interfaceController: CPInterfaceController?
     private var currentTemplate: CPListTemplate?
-    private let connectionManager: OBDConnectionManager
+    private let viewModel: DiagnosticsViewModel
     private var cancellables = Set<AnyCancellable>()
     
     init(connectionManager: OBDConnectionManager) {
-        self.connectionManager = connectionManager
-        
-       
+        // Use the shared diagnostics ViewModel logic
+        self.viewModel = DiagnosticsViewModel(connectionManager: connectionManager)
     }
 
     func setInterfaceController(_ interfaceController: CPInterfaceController) {
         self.interfaceController = interfaceController
         
-        // Observe connection state changes to keep the UI in sync
-        OBDConnectionManager.shared.$troubleCodes
+        // Observe ViewModel changes to keep the UI in sync
+        viewModel.$sections
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
                 self?.refreshSection()
@@ -35,25 +34,16 @@ class CarPlayDiagnosticsController {
     }
      
     private func buildSections() -> [CPListSection] {
-        let codes = connectionManager.troubleCodes
-
         // No DTCs → single info row
-        if codes.isEmpty {
+        if viewModel.sections.isEmpty {
             let item = makeItem("No Diagnostic Trouble Codes", detailText: nil)
             let section = CPListSection(items: [item])
-           return [section]
+            return [section]
         }
 
-        // Group codes by severity
-        let grouped = Dictionary(grouping: codes, by: { $0.severity })
-
-        // Ordered severity buckets (Critical → Low)
-        let order: [CodeSeverity] = [.critical, .high, .moderate, .low]
-
-        let sections: [CPListSection] = order.compactMap { severity -> CPListSection? in
-            guard let list = grouped[severity] else { return nil }
-
-            let items: [CPListItem] = list.map { code in
+        // Build sections from the ViewModel’s grouped/ordered data
+        let sections: [CPListSection] = viewModel.sections.map { section in
+            let items: [CPListItem] = section.items.map { code in
                 let item = CPListItem(
                     text: "\(code.code) • \(code.title)",
                     detailText: code.severity.rawValue
@@ -72,10 +62,10 @@ class CarPlayDiagnosticsController {
             }
 
             return CPListSection(items: items,
-                                 header: severitySectionTitle(severity),
+                                 header: section.title,
                                  sectionIndexTitle: nil)
         }
-        return sections;
+        return sections
     }
 
     private func refreshSection() {
@@ -122,6 +112,4 @@ class CarPlayDiagnosticsController {
     }
 
     // MARK: - Helpers
-
-   
 }
