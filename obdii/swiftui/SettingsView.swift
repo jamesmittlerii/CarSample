@@ -13,8 +13,6 @@ import UIKit
 
 struct SettingsView: View {
     @StateObject private var viewModel = SettingsViewModel()
-    // Observe ConfigData so SwiftUI refreshes when unitsPublished changes
-    @StateObject private var config = ConfigData.shared
 
     // Share sheet state (iOS only)
     #if canImport(UIKit)
@@ -37,16 +35,6 @@ struct SettingsView: View {
         #endif
     }
 
-    // Binding that maps directly MeasurementUnit <-> Picker
-    private var unitsBinding: Binding<MeasurementUnit> {
-        Binding<MeasurementUnit>(
-            get: { ConfigData.shared.unitsPublished },
-            set: { newUnit in
-                ConfigData.shared.setUnits(newUnit)
-            }
-        )
-    }
-
     var body: some View {
         NavigationStack {
             Form {
@@ -58,7 +46,7 @@ struct SettingsView: View {
 
                 // Single Units control (segmented)
                 Section(header: Text("Units")) {
-                    Picker("Units", selection: $config.unitsPublished) {
+                    Picker("Units", selection: $viewModel.units) {
                         Text("Metric").tag(MeasurementUnit.metric)
                         Text("Imperial").tag(MeasurementUnit.imperial)
                     }
@@ -141,7 +129,6 @@ struct SettingsView: View {
                 Section(header: Text("About")){
                     HStack {
                         Text(aboutDetailString()).multilineTextAlignment(.trailing)
-                       
                     }
                 }
             }

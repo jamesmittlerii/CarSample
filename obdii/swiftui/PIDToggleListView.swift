@@ -1,41 +1,41 @@
 import SwiftUI
 
 struct PIDToggleListView: View {
-    @StateObject private var store = PIDStore.shared
+    @StateObject private var viewModel = PIDToggleListViewModel()
 
     var body: some View {
         List {
             // Enabled section
-            let enabledIndices = store.pids.indices.filter { store.pids[$0].enabled && store.pids[$0].kind == .gauge}
-            if !enabledIndices.isEmpty {
+            let enabled = viewModel.enabledIndices
+            if !enabled.isEmpty {
                 Section(header: Text("Enabled")) {
-                    ForEach(enabledIndices, id: \.self) { index in
-                        let pid = store.pids[index]
+                    ForEach(enabled, id: \.self) { index in
+                        let pid = viewModel.pids[index]
                         PIDToggleRow(
                             pid: pid,
                             isOn: Binding(
-                                get: { store.pids[index].enabled },
-                                set: { newValue in store.pids[index].enabled = newValue }
+                                get: { viewModel.pids[index].enabled },
+                                set: { newValue in viewModel.toggle(at: index, to: newValue) }
                             )
                         )
                     }
                     .onMove { indices, newOffset in
-                        store.moveEnabled(fromOffsets: indices, toOffset: newOffset)
+                        viewModel.moveEnabled(fromOffsets: indices, toOffset: newOffset)
                     }
                 }
             }
 
             // Disabled section
-            let disabledIndices = store.pids.indices.filter { !store.pids[$0].enabled && store.pids[$0].kind == .gauge}
-            if !disabledIndices.isEmpty {
+            let disabled = viewModel.disabledIndices
+            if !disabled.isEmpty {
                 Section(header: Text("Disabled")) {
-                    ForEach(disabledIndices, id: \.self) { index in
-                        let pid = store.pids[index]
+                    ForEach(disabled, id: \.self) { index in
+                        let pid = viewModel.pids[index]
                         PIDToggleRow(
                             pid: pid,
                             isOn: Binding(
-                                get: { store.pids[index].enabled },
-                                set: { newValue in store.pids[index].enabled = newValue }
+                                get: { viewModel.pids[index].enabled },
+                                set: { newValue in viewModel.toggle(at: index, to: newValue) }
                             )
                         )
                     }
@@ -43,7 +43,6 @@ struct PIDToggleListView: View {
             }
         }
         .listStyle(.insetGrouped)
-        //.navigationTitle("Gauges")
     }
 }
 

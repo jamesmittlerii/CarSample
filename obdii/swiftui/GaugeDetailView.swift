@@ -1,43 +1,47 @@
 import SwiftUI
 import SwiftOBD2
+import Combine
+
 
 struct GaugeDetailView: View {
-    let pid: OBDPID
-    @ObservedObject var connectionManager: OBDConnectionManager
+    @StateObject private var viewModel: GaugeDetailViewModel
 
-    private var stats: OBDConnectionManager.PIDStats? {
-        connectionManager.stats(for: pid.pid)
+    init(pid: OBDPID, connectionManager: OBDConnectionManager) {
+        _viewModel = StateObject(wrappedValue: GaugeDetailViewModel(pid: pid, connectionManager: connectionManager))
     }
 
     var body: some View {
         List {
             Section(header: Text("Current")) {
-                if let s = stats {
-                    Text(pid.formatted(measurement: s.latest, includeUnits: true))
+                if let s = viewModel.stats {
+                    Text(viewModel.pid.formatted(measurement: s.latest, includeUnits: true))
                 } else {
-                    Text("— \(pid.displayUnits)")
+                    Text("— \(viewModel.pid.displayUnits)")
                         .foregroundColor(.secondary)
                 }
             }
 
-            if let s = stats {
+            if let s = viewModel.stats {
                 Section(header: Text("Statistics")) {
-                    Text("Min: \(pid.formatted(measurement: MeasurementResult(value: s.min, unit: s.latest.unit), includeUnits: true))")
-                    Text("Max: \(pid.formatted(measurement: MeasurementResult(value: s.max, unit: s.latest.unit), includeUnits: true))")
+                    Text("Min: \(viewModel.pid.formatted(measurement: MeasurementResult(value: s.min, unit: s.latest.unit), includeUnits: true))")
+                    Text("Max: \(viewModel.pid.formatted(measurement: MeasurementResult(value: s.max, unit: s.latest.unit), includeUnits: true))")
                     Text("Samples: \(s.sampleCount)")
                 }
             }
 
             Section(header: Text("Maximum Range")) {
-                Text(pid.displayRange)
+                Text(viewModel.pid.displayRange)
             }
         }
-        .navigationTitle(pid.name)
+        .navigationTitle(viewModel.pid.name)
     }
 }
 
 #Preview {
     NavigationView {
-        GaugeDetailView(pid: PIDStore.shared.enabledGauges.first ?? PIDStore.shared.pids.first!, connectionManager: OBDConnectionManager.shared)
+        GaugeDetailView(
+            pid: PIDStore.shared.enabledGauges.first ?? PIDStore.shared.pids.first!,
+            connectionManager: OBDConnectionManager.shared
+        )
     }
 }

@@ -12,6 +12,7 @@ class SettingsViewModel: ObservableObject {
     @Published var autoConnectToOBD: Bool
     @Published var connectionType: ConnectionType
     @Published private(set) var connectionState: OBDConnectionManager.ConnectionState
+    @Published var units: MeasurementUnit   // NEW: expose units to the View
 
     // MARK: - Private Model References
     
@@ -46,6 +47,7 @@ class SettingsViewModel: ObservableObject {
         self.autoConnectToOBD = configData.autoConnectToOBD
         self.connectionType = configData.connectionType
         self.connectionState = connectionManager.connectionState
+        self.units = configData.unitsPublished   // NEW
 
         // Set up subscriptions to propagate changes from models to ViewModel
         // and from ViewModel back to models.
@@ -106,6 +108,20 @@ class SettingsViewModel: ObservableObject {
                 guard let self else { return }
                 self.configData.connectionType = newType
                 self.connectionManager.updateConnectionDetails()
+            }
+            .store(in: &cancellables)
+
+        // NEW: Units two-way binding between ConfigData and ViewModel
+        configData.$unitsPublished
+            .removeDuplicates()
+            .receive(on: RunLoop.main)
+            .assign(to: &$units)
+
+        $units
+            .dropFirst()
+            .removeDuplicates()
+            .sink { [weak self] newUnits in
+                self?.configData.setUnits(newUnits)
             }
             .store(in: &cancellables)
     }

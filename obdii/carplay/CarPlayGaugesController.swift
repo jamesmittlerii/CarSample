@@ -35,15 +35,6 @@ class CarPlayGaugesController {
                 self?.refreshSection()
             }
             .store(in: &cancellables)
-        
-        // Also refresh when units change so displayUnits/displayRange update
-        ConfigData.shared.$unitsPublished
-            .removeDuplicates()
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in
-                self?.refreshSection()
-            }
-            .store(in: &cancellables)
     }
 
     /// Creates the root template for the Gauges tab.
