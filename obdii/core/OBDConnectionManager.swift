@@ -211,6 +211,7 @@ class OBDConnectionManager: ObservableObject {
 
         // Re-bind to the new service’s connectionState via helper
         obdService.$connectionState
+            .removeDuplicates()
             .receive(on: DispatchQueue.main)
             .sink { [weak self] serviceState in
                 self?.handleServiceConnectionState(serviceState)
