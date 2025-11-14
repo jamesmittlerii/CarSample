@@ -79,7 +79,6 @@ extension ConfigData {
 
     func setUnits(_ newUnits: MeasurementUnit) {
         // Update both storage and published mirror
-        //print ("Setting units to \(newUnits)")
         self.units = newUnits
         self.unitsPublished = newUnits
     }

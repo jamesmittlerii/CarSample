@@ -8,6 +8,7 @@
 import UIKit
 import OSLog
 
+
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
@@ -16,10 +17,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication,
                      didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-
-        // Log build details at startup
-        let details = aboutDetailString()
-        AppDelegate.logger.info("\(details, privacy: .public)")
 
         // App-level setup only
         return true
