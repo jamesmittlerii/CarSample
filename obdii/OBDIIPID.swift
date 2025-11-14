@@ -200,13 +200,22 @@ struct OBDPID: Identifiable, Hashable, Codable {
     func displayUnits(for measurementUnit: MeasurementUnit) -> String {
         unitLabel(for: measurementUnit)
     }
+    
+    func combinedRange() -> ValueRange {
+        let metricRanges: [ValueRange] = [typicalRange, warningRange, dangerRange].compactMap { $0 }
+        let fallbackTypical = typicalRange ?? ValueRange(min: 0, max: 1)
+        let metricMin = metricRanges.map(\.min).min() ?? fallbackTypical.min
+        let metricMax = metricRanges.map(\.max).max() ?? fallbackTypical.max
+        return ValueRange(min: metricMin, max: metricMax)
+    }
 
     /// Returns a display string for UI, e.g. "600 – 7000 RPM", converted for the requested unit.
     func displayRange(for measurementUnit: MeasurementUnit) -> String {
-        guard let baseUnits = units,
-              let metricTypical = typicalRange
+        guard let baseUnits = units
+              //    let metricTypical = combinedRange() //typicalRange
         else { return "" }
 
+        let metricTypical = combinedRange()
         // Convert the typical range and label
         let convertedTypical = metricTypical.converted(from: baseUnits, to: measurementUnit)
         let unitLabel = unitLabel(for: measurementUnit)
@@ -378,7 +387,7 @@ struct OBDPID: Identifiable, Hashable, Codable {
         case "km/h", "mph":
             return 0
         case "km", "mi":
-            return 1
+            return 0
         case "L/h":
             return 1
         case "s", "count":
@@ -1198,7 +1207,7 @@ struct OBDPIDLibrary {
             pid: .mode1(.distanceWMIL),
             formula: "((A*256)+B) km",
             units: "km",
-            typicalRange: .init(min: 0, max: 100000),
+            typicalRange: .init(min: 0, max: 65535),
             warningRange: nil,
             dangerRange: nil,
             notes: "Distance travelled while MIL was on"
@@ -1329,12 +1338,12 @@ struct OBDPIDLibrary {
         ),
         OBDPID(
             enabled: false,
-            label: "Dist Since",
+            label: "Dist DTC Clr",
             name: "Distance Since DTC Cleared",
             pid: .mode1(.distanceSinceDTCCleared),
             formula: "((A*256)+B) km",
             units: "km",
-            typicalRange: .init(min: 0, max: 100000),
+            typicalRange: .init(min: 0, max: 65535),
             warningRange: nil,
             dangerRange: nil
         ),

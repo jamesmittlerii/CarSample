@@ -16,12 +16,22 @@ enum GaugesDisplayMode: String, CaseIterable, Identifiable {
 }
 
 struct GaugesContainerView: View {
-    @State private var mode: GaugesDisplayMode = .gauges
+    // Persist the selected mode across runs
+    @AppStorage("gaugesDisplayMode") private var storedMode: String = GaugesDisplayMode.gauges.rawValue
+
+    // Bridge stored string <-> enum for Picker
+    private var modeBinding: Binding<GaugesDisplayMode> {
+        Binding<GaugesDisplayMode>(
+            get: { GaugesDisplayMode(rawValue: storedMode) ?? .gauges },
+            set: { storedMode = $0.rawValue }
+        )
+    }
+
     @ObservedObject var connectionManager: OBDConnectionManager
 
     var body: some View {
         VStack {
-            Picker("Display Mode", selection: $mode) {
+            Picker("Display Mode", selection: modeBinding) {
                 ForEach(GaugesDisplayMode.allCases) { m in
                     Text(m.title).tag(m)
                 }
@@ -30,7 +40,7 @@ struct GaugesContainerView: View {
             .padding([.horizontal, .top])
 
             Group {
-                switch mode {
+                switch GaugesDisplayMode(rawValue: storedMode) ?? .gauges {
                 case .gauges:
                     GaugesView(connectionManager: connectionManager, pidStore: .shared)
                 case .list:
@@ -38,7 +48,7 @@ struct GaugesContainerView: View {
                  }
             }
         }
-        .navigationTitle(titleForMode(mode))
+        .navigationTitle(titleForMode(GaugesDisplayMode(rawValue: storedMode) ?? .gauges))
         .navigationBarTitleDisplayMode(.inline)
     }
 

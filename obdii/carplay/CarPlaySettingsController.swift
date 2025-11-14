@@ -48,10 +48,10 @@ class CarPlaySettingsController {
     }
 
     private func makeUnitsItem() -> CPListItem {
-        let item = CPListItem(text: "Units", detailText: ConfigData.shared.units.rawValue)
+        let item = CPListItem(text: "Units", detailText: ConfigData.shared.unitsPublished.rawValue)
         item.handler = { [weak self] _, completion in
             // Toggle units using the setter so unitsPublished emits
-            let next = ConfigData.shared.units.next
+            let next = ConfigData.shared.unitsPublished.next
             ConfigData.shared.setUnits(next)
 
             // Update the UI: rebuild the section and update the template

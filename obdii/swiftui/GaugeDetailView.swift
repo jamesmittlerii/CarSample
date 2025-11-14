@@ -28,7 +28,7 @@ struct GaugeDetailView: View {
                 }
             }
 
-            Section(header: Text("Typical Range")) {
+            Section(header: Text("Maximum Range")) {
                 Text(pid.displayRange)
             }
         }

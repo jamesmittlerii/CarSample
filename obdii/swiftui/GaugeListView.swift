@@ -12,13 +12,11 @@ struct GaugeListView: View {
                     NavigationLink(destination: GaugeDetailView(pid: pid, connectionManager: connectionManager)) {
                         HStack {
                             VStack(alignment: .leading, spacing: 4) {
-                                Text(pid.label)
+                                Text(pid.name)
                                     .font(.headline)
-                                if pid.name != pid.label {
-                                    Text(pid.name)
+                                Text(pid.displayRange)
                                         .font(.subheadline)
                                         .foregroundColor(.secondary)
-                                }
                             }
                             Spacer()
                             Text(currentValueText(for: pid))
