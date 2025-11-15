@@ -19,7 +19,7 @@ import SwiftOBD2
 
 @MainActor
 final class GaugesViewModel: ObservableObject {
-    struct Tile: Identifiable {
+    struct Tile: Identifiable, Equatable {
         let id: UUID
         let pid: OBDPID
         let measurement: MeasurementResult?

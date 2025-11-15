@@ -20,6 +20,7 @@ base class for our tab templates
 
 import CarPlay
 import Combine
+import SwiftOBD2
 
 @MainActor
 class CarPlayBaseTemplateController: NSObject, @MainActor CarPlayTabControlling {
@@ -32,11 +33,12 @@ class CarPlayBaseTemplateController: NSObject, @MainActor CarPlayTabControlling 
     private var tabCancellable: AnyCancellable?
     private var cancellables = Set<AnyCancellable>()
 
+    // Demand-driven polling token for this controller
+    let controllerToken: UUID = PIDInterestRegistry.shared.makeToken()
+
     // MARK: - CarPlayTabControlling
 
     func makeRootTemplate() -> CPTemplate {
-        // Subclasses are expected to override and return their concrete template.
-        // Provide a harmless empty template to satisfy the protocol if not overridden.
         let template = CPListTemplate(title: "", sections: [])
         self.currentTemplate = template
         return template
@@ -46,8 +48,6 @@ class CarPlayBaseTemplateController: NSObject, @MainActor CarPlayTabControlling 
         self.interfaceController = interfaceController
     }
 
-    // Injected from Scene
-    // keep track of which tab got selected
     func setTabSelectionPublisher(_ publisher: AnyPublisher<Int, Never>, tabIndex: Int) {
         self.tabIndex = tabIndex
         tabCancellable = publisher
@@ -57,42 +57,51 @@ class CarPlayBaseTemplateController: NSObject, @MainActor CarPlayTabControlling 
                 let wasSelected = self.isTabSelected
                 self.isTabSelected = (selected == tabIndex)
          
-                // If this tab just became selected, force a refresh now.
                 if self.isTabSelected && !wasSelected {
                     self.didBecomeVisible()
+                } else if !self.isTabSelected && wasSelected {
+                    // Tab just got deselected: clear any interest registered by this controller
+                    PIDInterestRegistry.shared.clear(token: self.controllerToken)
                 }
             }
     }
 
-    // Strictly on-screen check
     var isTemplateVisible: Bool {
         guard let interfaceController, let currentTemplate,
               let top = interfaceController.topTemplate else { return false }
         return top === currentTemplate
     }
 
-    // Gate UI updates by tab selection (and optionally visibility)
     func refreshIfVisible(_ action: () -> Void) {
         let allow = isTabSelected
         guard allow else { return }
         action()
     }
 
-    // Called when the tab becomes selected. Subclasses can override, but default forces a guarded refresh.
     func didBecomeVisible() {
         refreshIfVisible { [weak self] in
             self?.performRefresh()
+            // Subclasses should also register their visible PIDs in this moment.
+            self?.registerVisiblePIDs()
         }
     }
-    
-    // MARK: - Subscribe helpers (Equatable: removeDuplicates)
 
-    // Convenience: subscribe and refresh without throttling (Equatable)
+    // Subclasses should override this to perform their own refresh (e.g., refreshSection/refreshTemplate).
+    func performRefresh() {
+        // Default does nothing. subclass should override it.
+    }
+
+    // Subclasses can override to register their currently visible PIDs.
+    func registerVisiblePIDs() {
+        // Default does nothing.
+    }
+
+    // MARK: - Subscribe helpers (Equatable)
+
     func subscribeAndRefresh<T: Equatable>(_ publisher: Published<T>.Publisher) {
         subscribeAndRefresh(publisher, throttleSeconds: 0)
     }
     
-    // Subscribe and refresh with optional throttling (Equatable)
     func subscribeAndRefresh<T: Equatable>(
         _ publisher: Published<T>.Publisher,
         throttleSeconds: TimeInterval,
@@ -118,19 +127,18 @@ class CarPlayBaseTemplateController: NSObject, @MainActor CarPlayTabControlling 
             .sink { [weak self] _ in
                 self?.refreshIfVisible {
                     self?.performRefresh()
+                    self?.registerVisiblePIDs()
                 }
             }
             .store(in: &cancellables)
     }
 
-    // MARK: - Subscribe helpers (no Equatable: no removeDuplicates)
+    // MARK: - Subscribe helpers (no Equatable)
 
-    // Convenience: subscribe and refresh without throttling (non-Equatable)
     func subscribeAndRefresh<T>(_ publisher: Published<T>.Publisher) {
         subscribeAndRefresh(publisher, throttleSeconds: 0)
     }
 
-    // Subscribe and refresh with optional throttling (non-Equatable)
     func subscribeAndRefresh<T>(
         _ publisher: Published<T>.Publisher,
         throttleSeconds: TimeInterval,
@@ -155,14 +163,10 @@ class CarPlayBaseTemplateController: NSObject, @MainActor CarPlayTabControlling 
             .sink { [weak self] _ in
                 self?.refreshIfVisible {
                     self?.performRefresh()
+                    self?.registerVisiblePIDs()
                 }
             }
             .store(in: &cancellables)
-    }
-
-    // Subclasses should override this to perform their own refresh (e.g., refreshSection/refreshTemplate).
-    func performRefresh() {
-        // Default does nothing. subclass should override it.
     }
 
     // Debug helpers
@@ -172,3 +176,4 @@ class CarPlayBaseTemplateController: NSObject, @MainActor CarPlayTabControlling 
     }
    
 }
+

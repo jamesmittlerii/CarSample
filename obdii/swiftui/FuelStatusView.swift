@@ -19,6 +19,8 @@ import SwiftOBD2
 
 struct FuelStatusView: View {
     @StateObject private var viewModel = FuelStatusViewModel()
+    // Token for demand-driven polling
+    @State private var interestToken: UUID = PIDInterestRegistry.shared.makeToken()
 
     var body: some View {
         NavigationStack {
@@ -61,9 +63,16 @@ struct FuelStatusView: View {
             }
             .navigationTitle("Fuel Control Status")
         }
+        .onAppear {
+            PIDInterestRegistry.shared.replace(pids: [.mode1(.fuelStatus)], for: interestToken)
+        }
+        .onDisappear {
+            PIDInterestRegistry.shared.clear(token: interestToken)
+        }
     }
 }
 
 #Preview {
     FuelStatusView()
 }
+

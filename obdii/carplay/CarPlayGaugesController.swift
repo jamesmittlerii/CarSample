@@ -31,15 +31,19 @@ class CarPlayGaugesController: CarPlayBaseTemplateController {
     
     init(connectionManager: OBDConnectionManager) {
         self.connectionManager = connectionManager
-        // Construct the gauges view model on the MainActor
         self.viewModel = GaugesViewModel(connectionManager: connectionManager, pidStore: PIDStore.shared)
     }
 
     override func setInterfaceController(_ interfaceController: CPInterfaceController) {
         super.setInterfaceController(interfaceController)
-        
-        // Subscribe with throttling, and let the base class gate refreshes by tab visibility
+        // Subscribe with throttling; base class will call performRefresh and registerVisiblePIDs when visible
         subscribeAndRefresh(viewModel.$tiles, throttleSeconds: 1.0)
+    }
+
+    override func registerVisiblePIDs() {
+        // In this CarPlay design, all tiles appear in a single CPListImageRowItem row; treat them all as visible.
+        let visiblePIDs: Set<OBDCommand> = Set(viewModel.tiles.map { $0.pid.pid })
+        PIDInterestRegistry.shared.replace(pids: visiblePIDs, for: controllerToken)
     }
 
     /// Creates the root template for the Gauges tab.
@@ -59,8 +63,6 @@ class CarPlayGaugesController: CarPlayBaseTemplateController {
         template.updateSections(sections)
     }
 
-    //  Private Template Creation & Navigation
-
     private func makeItem(_ text: String, detailText: String?) -> CPListItem {
         let item = CPListItem(text: text, detailText: detailText)
         item.handler = { _, completion in completion() }
@@ -70,7 +72,6 @@ class CarPlayGaugesController: CarPlayBaseTemplateController {
     private func buildSections() -> [CPListSection]  {
         let tiles = viewModel.tiles
         
-        // No gauges → single info row
         if tiles.isEmpty {
             let item = makeItem("No Enabled Gauges", detailText: nil)
             let section = CPListSection(items: [item])
@@ -99,6 +100,10 @@ class CarPlayGaugesController: CarPlayBaseTemplateController {
                 return
             }
             let tappedPID = tiles[index].pid
+
+            // Before pushing detail, clear root interest and rely on detail controller to own interest for single PID
+            PIDInterestRegistry.shared.clear(token: self.controllerToken)
+
             self.presentSensorTemplate(for: tappedPID)
             completion()
         }
@@ -115,13 +120,16 @@ class CarPlayGaugesController: CarPlayBaseTemplateController {
         detailController = controller
 
         // Push its template
-        interfaceController?.pushTemplate(controller.template, animated: false, completion: nil)
+        interfaceController?.pushTemplate(controller.template, animated: false, completion: { [weak self] success, error in
+            // no-op
+            // When user pops detail, CarPlay will show our root again; didBecomeVisible will re-register visible set.
+            // Optionally, you could log:
+            // if !success, let error { print("Failed to push template: \(error)") }
+            _ = self // keep self captured if needed later
+        })
     }
 
-    // Hook for base class visibility refresh
     override func performRefresh() {
         refreshSection()
     }
-
-    //  Helpers
 }

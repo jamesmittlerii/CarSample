@@ -48,7 +48,6 @@ final class CarPlayGaugeDetailController {
     private static func buildItems(for pid: OBDPID, stats: OBDConnectionManager.PIDStats?) -> [CPInformationItem] {
         var items: [CPInformationItem] = []
 
-        // Current
         if let s = stats {
             let currentStr = pid.formatted(measurement: s.latest, includeUnits: true)
             items.append(CPInformationItem(title: "Current", detail: currentStr))
@@ -56,7 +55,6 @@ final class CarPlayGaugeDetailController {
             items.append(CPInformationItem(title: "Current", detail: "— \(pid.displayUnits)"))
         }
 
-        // Min/Max/Samples
         if let s = stats {
             let minStr = pid.formatted(measurement: MeasurementResult(value: s.min, unit: s.latest.unit), includeUnits: true)
             let maxStr = pid.formatted(measurement: MeasurementResult(value: s.max, unit: s.latest.unit), includeUnits: true)
@@ -65,7 +63,6 @@ final class CarPlayGaugeDetailController {
             items.append(CPInformationItem(title: "Samples", detail: "\(s.sampleCount)"))
         }
 
-        // Typical Range
         items.append(CPInformationItem(title: "Typical Range", detail: pid.displayRange))
 
         return items

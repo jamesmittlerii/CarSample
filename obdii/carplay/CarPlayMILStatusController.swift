@@ -79,6 +79,11 @@ class CarPlayMILStatusController: CarPlayBaseTemplateController {
         let sections = buildSections()
         template.updateSections(sections)
     }
+    
+    // Ensure demand-driven streaming includes fuel status while this tab is visible
+    override func registerVisiblePIDs() {
+        PIDInterestRegistry.shared.replace(pids: [.mode1(.status)], for: controllerToken)
+    }
 
     /// Creates the root template for the MIL tab.
     override func makeRootTemplate() -> CPListTemplate {

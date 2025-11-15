@@ -20,6 +20,8 @@ import SwiftOBD2
 
 struct MILStatusView: View {
     @StateObject private var viewModel = MILStatusViewModel()
+    // Demand-driven interest token for this view
+    @State private var interestToken: UUID = PIDInterestRegistry.shared.makeToken()
 
     var body: some View {
         NavigationStack {
@@ -58,6 +60,14 @@ struct MILStatusView: View {
                 }
             }
             .navigationTitle("MIL Status")
+        }
+        .onAppear {
+            // Request streaming for MIL/status while this view is visible
+            PIDInterestRegistry.shared.replace(pids: [.mode1(.status)], for: interestToken)
+        }
+        .onDisappear {
+            // Clear our interest when leaving
+            PIDInterestRegistry.shared.clear(token: interestToken)
         }
     }
 }
