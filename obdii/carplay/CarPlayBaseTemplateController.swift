@@ -22,7 +22,7 @@ import CarPlay
 import Combine
 
 @MainActor
-class CarPlayBaseTemplateController: NSObject {
+class CarPlayBaseTemplateController: NSObject, @MainActor CarPlayTabControlling {
     weak var interfaceController: CPInterfaceController?
     var currentTemplate: CPTemplate?
 
@@ -31,6 +31,16 @@ class CarPlayBaseTemplateController: NSObject {
     private var isTabSelected = false
     private var tabCancellable: AnyCancellable?
     private var cancellables = Set<AnyCancellable>()
+
+    // MARK: - CarPlayTabControlling
+
+    func makeRootTemplate() -> CPTemplate {
+        // Subclasses are expected to override and return their concrete template.
+        // Provide a harmless empty template to satisfy the protocol if not overridden.
+        let template = CPListTemplate(title: "", sections: [])
+        self.currentTemplate = template
+        return template
+    }
 
     func setInterfaceController(_ interfaceController: CPInterfaceController) {
         self.interfaceController = interfaceController

@@ -81,7 +81,7 @@ class CarPlayMILStatusController: CarPlayBaseTemplateController {
     }
 
     /// Creates the root template for the MIL tab.
-    func makeRootTemplate() -> CPListTemplate {
+    override func makeRootTemplate() -> CPListTemplate {
         let sections = buildSections()
         let template = CPListTemplate(title: "MILStatus", sections: sections)
         template.tabTitle = "MIL"

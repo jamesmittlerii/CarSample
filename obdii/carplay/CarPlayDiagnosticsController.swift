@@ -83,7 +83,7 @@ class CarPlayDiagnosticsController: CarPlayBaseTemplateController {
     }
 
     /// Creates the root template for the Settings tab.
-    func makeRootTemplate() -> CPListTemplate {
+    override func makeRootTemplate() -> CPListTemplate {
         let sections = buildSections()
         let template = CPListTemplate(title: "DTCs", sections: sections)
         template.tabTitle = "DTCs"

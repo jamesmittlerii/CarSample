@@ -68,7 +68,7 @@ class CarPlayFuelStatusController: CarPlayBaseTemplateController {
         return items
     }
 
-    func makeRootTemplate() -> CPInformationTemplate {
+    override func makeRootTemplate() -> CPInformationTemplate {
         let items = buildInformationItems()
         let template = CPInformationTemplate(title: "Fuel Control Status", layout: .leading, items: items, actions: [])
         template.tabTitle = "FC"

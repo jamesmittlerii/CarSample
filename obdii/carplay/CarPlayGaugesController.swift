@@ -43,7 +43,7 @@ class CarPlayGaugesController: CarPlayBaseTemplateController {
     }
 
     /// Creates the root template for the Gauges tab.
-    func makeRootTemplate() -> CPListTemplate {
+    override func makeRootTemplate() -> CPListTemplate {
         let section = buildSections()
         let template = CPListTemplate(title: "Gauges", sections: section)
         template.tabTitle = "Gauges"
