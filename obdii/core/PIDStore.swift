@@ -96,23 +96,23 @@ final class PIDStore: ObservableObject {
         pids.filter { $0.enabled && $0.kind == OBDPID.Kind.gauge }
     }
 
-    /// Reorder within the enabled subset based on the provided offsets.
-    /// - Parameters:
-    ///   - source: Offsets within the enabled subset.
-    ///   - destination: Destination index within the enabled subset.
+   
+    // reorder the enabled gauges
     func moveEnabled(fromOffsets source: IndexSet, toOffset destination: Int) {
-        // Identify the enabled slice range in the master array
-        let enabledCount = pids.filter { $0.enabled }.count
-        guard enabledCount > 0 else { return }
+        
+        var enabledGauges: [OBDPID] = pids.filter { $0.enabled && $0.kind == .gauge }
+        let disabledGauges: [OBDPID] = pids.filter { !$0.enabled && $0.kind == .gauge }
+        let nonGauges: [OBDPID] = pids.filter { $0.enabled && $0.kind != .gauge }
+        
+        // If there are no enabled gauges, there's nothing to move.
+        guard !enabledGauges.isEmpty else { return }
 
-        // Build a local array of enabled items to apply the move
-        var enabled = Array(pids.prefix(enabledCount))
-        enabled.move(fromOffsets: source, toOffset: destination)
+        // Apply the move within the enabledGauges subset
+        enabledGauges.move(fromOffsets: source, toOffset: destination)
 
-        // Rebuild the master pids as [enabledMoved] + [disabledUnchanged]
-        let disabled = pids.suffix(from: enabledCount)
-        pids = enabled + disabled
-        // Persistence will be triggered by the @Published sink
+        // reassemble the whole array of pids
+        pids = enabledGauges + disabledGauges + nonGauges
+  
     }
 
     //  Persistence
@@ -135,4 +135,3 @@ final class PIDStore: ObservableObject {
         }
     }
 }
-
