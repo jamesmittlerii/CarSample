@@ -28,8 +28,6 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate {
     
     // Models and Services
     private let connectionManager = OBDConnectionManager.shared
-    private var measurementCancellable: AnyCancellable?
-    private var pidEnabledCancellable: AnyCancellable?   // NEW: observe enabled PID changes
     
     let tabCoordinator = CarPlayTabCoordinator()
     
@@ -78,16 +76,20 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate {
         diagnosticsController.setTabSelectionPublisher(tabCoordinator.selectedIndexPublisher, tabIndex: 3)
         settingsController.setTabSelectionPublisher(tabCoordinator.selectedIndexPublisher, tabIndex: 4)
 
-        // Optionally select the persisted tab initially if in range
-        let initialIndex = UserDefaults.standard.integer(forKey: "selectedCarPlayTab")
-        if (0..<tabBar.templates.count).contains(initialIndex) {
-            // Many SDKs don’t support the selectedTemplate: overload; just update templates.
-            tabBar.updateTemplates(tabBar.templates)
-        }
-
+        // Set the tab bar as root first so selection will take effect
         interfaceController.setRootTemplate(tabBar,
                                             animated: true,
                                             completion: nil)
+
+        // Now restore previously selected tab by selecting its index
+        let initialIndex = UserDefaults.standard.integer(forKey: "selectedCarPlayTab")
+        
+        // we have to run this though async for some reason
+        DispatchQueue.main.async {
+            if (0..<tabBar.templates.count).contains(initialIndex) {
+                tabBar.selectTemplate(at: initialIndex)
+            }
+        }
         
         // Start OBD-II connection automatically if enabled
         if ConfigData.shared.autoConnectToOBD {
@@ -99,8 +101,6 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate {
 
     func templateApplicationScene(_ templateApplicationScene: CPTemplateApplicationScene, didDisconnectInterfaceController interfaceController: CPInterfaceController) {
         self.interfaceController = nil
-        measurementCancellable?.cancel()
-        pidEnabledCancellable?.cancel() // NEW: cancel the PID enabled subscription
     }
 }
 

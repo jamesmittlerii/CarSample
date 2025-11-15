@@ -38,17 +38,8 @@ class CarPlayGaugesController: CarPlayBaseTemplateController {
     override func setInterfaceController(_ interfaceController: CPInterfaceController) {
         super.setInterfaceController(interfaceController)
         
-        // Subscribe to tiles updates (enabled PIDs + latest measurements) and refresh the list
-        // only refresh if visible
-        viewModel.$tiles
-            .throttle(for: .seconds(1), scheduler: DispatchQueue.main, latest: true)
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in
-                self?.refreshIfVisible { [weak self] in
-                    self?.refreshSection()
-                }
-            }
-            .store(in: &cancellables)
+        // Subscribe with throttling, and let the base class gate refreshes by tab visibility
+        subscribeAndRefresh(viewModel.$tiles, throttleSeconds: 1.0)
     }
 
     /// Creates the root template for the Gauges tab.

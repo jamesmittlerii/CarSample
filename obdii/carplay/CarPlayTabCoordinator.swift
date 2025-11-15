@@ -1,9 +1,17 @@
-//
-//  CarPlayTabCoordinator.swift
-//  obdii
-//
-//  Created by cisstudent on 11/15/25.
-//
+/**
+ 
+ * __Final Project__
+ * Jim Mittler
+ * 14 November 2025
+ 
+ 
+CarPlay class to keep track of selected tab
+ 
+ _Italic text__
+ __Bold text__
+ ~~Strikethrough text~~
+ 
+ */
 import CarPlay
 import UIKit
 import Combine

@@ -64,7 +64,6 @@ class CarPlayBaseTemplateController: NSObject {
     // Gate UI updates by tab selection (and optionally visibility)
     func refreshIfVisible(_ action: () -> Void) {
         let allow = isTabSelected
-      //  log("refreshIfVisible? selected=\(isTabSelected) visible=\(isTemplateVisible) -> \(allow)")
         guard allow else { return }
         action()
     }
@@ -76,10 +75,36 @@ class CarPlayBaseTemplateController: NSObject {
         }
     }
     
+    // MARK: - Subscribe helpers (Equatable: removeDuplicates)
+
+    // Convenience: subscribe and refresh without throttling (Equatable)
     func subscribeAndRefresh<T: Equatable>(_ publisher: Published<T>.Publisher) {
-        publisher
+        subscribeAndRefresh(publisher, throttleSeconds: 0)
+    }
+    
+    // Subscribe and refresh with optional throttling (Equatable)
+    func subscribeAndRefresh<T: Equatable>(
+        _ publisher: Published<T>.Publisher,
+        throttleSeconds: TimeInterval,
+        scheduler: DispatchQueue = .main,
+        latest: Bool = true
+    ) {
+        let base = publisher
             .removeDuplicates()
-            .receive(on: DispatchQueue.main)
+            .receive(on: scheduler)
+        
+        let erased: AnyPublisher<T, Never>
+        if throttleSeconds > 0 {
+            erased = base
+                .throttle(for: .seconds(throttleSeconds), scheduler: scheduler, latest: latest)
+                .receive(on: scheduler)
+                .eraseToAnyPublisher()
+        } else {
+            erased = base
+                .eraseToAnyPublisher()
+        }
+
+        erased
             .sink { [weak self] _ in
                 self?.refreshIfVisible {
                     self?.performRefresh()
@@ -87,7 +112,43 @@ class CarPlayBaseTemplateController: NSObject {
             }
             .store(in: &cancellables)
     }
-    
+
+    // MARK: - Subscribe helpers (no Equatable: no removeDuplicates)
+
+    // Convenience: subscribe and refresh without throttling (non-Equatable)
+    func subscribeAndRefresh<T>(_ publisher: Published<T>.Publisher) {
+        subscribeAndRefresh(publisher, throttleSeconds: 0)
+    }
+
+    // Subscribe and refresh with optional throttling (non-Equatable)
+    func subscribeAndRefresh<T>(
+        _ publisher: Published<T>.Publisher,
+        throttleSeconds: TimeInterval,
+        scheduler: DispatchQueue = .main,
+        latest: Bool = true
+    ) {
+        let base = publisher
+            .receive(on: scheduler)
+
+        let erased: AnyPublisher<T, Never>
+        if throttleSeconds > 0 {
+            erased = base
+                .throttle(for: .seconds(throttleSeconds), scheduler: scheduler, latest: latest)
+                .receive(on: scheduler)
+                .eraseToAnyPublisher()
+        } else {
+            erased = base
+                .eraseToAnyPublisher()
+        }
+
+        erased
+            .sink { [weak self] _ in
+                self?.refreshIfVisible {
+                    self?.performRefresh()
+                }
+            }
+            .store(in: &cancellables)
+    }
 
     // Subclasses should override this to perform their own refresh (e.g., refreshSection/refreshTemplate).
     func performRefresh() {
