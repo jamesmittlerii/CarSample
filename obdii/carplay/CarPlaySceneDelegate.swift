@@ -88,6 +88,8 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate {
         DispatchQueue.main.async {
             if (0..<tabBar.templates.count).contains(initialIndex) {
                 tabBar.selectTemplate(at: initialIndex)
+                // the picker always selects gauges for some reason
+                
             }
         }
         
