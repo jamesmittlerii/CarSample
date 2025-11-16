@@ -111,6 +111,7 @@ class OBDConnectionManager: ObservableObject {
             port: UInt16(ConfigData.shared.wifiPort)
         )
 
+        // Debug: confirm we’re observing the exact same registry instance
         // Mirror the connected peripheral name from OBDService
         obdService.$connectedPeripheral
             .map { $0?.name }
@@ -132,7 +133,7 @@ class OBDConnectionManager: ObservableObject {
 
         // Observe demand-driven interest set from PIDInterestRegistry
         PIDInterestRegistry.shared.$interested
-            .removeDuplicates()
+            .removeDuplicates() // keep disabled while debugging
             .sink { [weak self] interestedSet in
                 guard let self else { return }
                 // Prune pidStats for any PIDs that are no longer interested
@@ -254,10 +255,6 @@ class OBDConnectionManager: ObservableObject {
             
             supportedPids = await obdService.getSupportedPIDs()
             
-            let myTroubleCodes = try await obdService.scanForTroubleCodes()
-            if (myTroubleCodes[SwiftOBD2.ECUID.engine] != nil) {
-                troubleCodes = myTroubleCodes[SwiftOBD2.ECUID.engine]!
-            }
             connectionState = .connected
             connectedPeripheralName = obdService.connectedPeripheral?.name
             obdInfo("OBD-II connected successfully.", category: .service)
@@ -272,8 +269,10 @@ class OBDConnectionManager: ObservableObject {
     }
 
     func disconnect() {
-         obdService.stopConnection()
-        cancellables.removeAll()
+        obdService.stopConnection()
+        // IMPORTANT: do not clear `cancellables` here; those subscriptions are long-lived.
+        // streamCancellables are the per-stream updates that should be cleared.
+        streamCancellables.removeAll()
         clearForTerminalState()
         connectionState = .disconnected
         obdInfo("OBD-II disconnected.", category: .service)
@@ -384,6 +383,7 @@ class OBDConnectionManager: ObservableObject {
                     guard let self else { return }
                     for (command, decode) in measurements {
                         switch command {
+                            
                         case .mode1(let pid):
                             switch pid {
                             case .fuelStatus:
@@ -404,6 +404,15 @@ class OBDConnectionManager: ObservableObject {
                                 var stats = self.pidStats[key] ?? PIDStats(pid: key, measurement: measurement)
                                 stats.update(with: measurement)
                                 self.pidStats[key] = stats
+                            }
+                        case .mode3(let m3):
+                            switch m3 {
+                            case .GET_DTC:
+                                if let dtcs = decode.troubleCodesByECU {
+                                    if let engine = dtcs[SwiftOBD2.ECUID.engine] {
+                                        self.troubleCodes = engine
+                                    }
+                                }
                             }
                         default:
                             continue
@@ -428,4 +437,3 @@ extension OBDConnectionManager.ConnectionState {
         return false
     }
 }
-

@@ -35,6 +35,11 @@ class CarPlayDiagnosticsController: CarPlayBaseTemplateController {
         
     }
     
+    // Ensure demand-driven streaming includes fuel status while this tab is visible
+    override func registerVisiblePIDs() {
+        PIDInterestRegistry.shared.replace(pids: [.mode3(.GET_DTC)], for: controllerToken)
+    }
+    
     private func makeItem(_ text: String, detailText: String?) -> CPListItem {
         let item = CPListItem(text: text, detailText: detailText)
         item.handler = { _, completion in completion() }

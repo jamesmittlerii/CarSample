@@ -22,14 +22,14 @@ struct GaugeListView: View {
 
     // Demand-driven polling token
     @State private var interestToken: UUID = PIDInterestRegistry.shared.makeToken()
-    // Track visible IDs
-    @State private var visibleIDs: Set<UUID> = []
-    // Remember last set we registered to avoid transient drops
-    @State private var lastRegistered: Set<OBDCommand> = []
 
     init(connectionManager: OBDConnectionManager) {
         self.connectionManager = connectionManager
         _viewModel = StateObject(wrappedValue: GaugesViewModel(connectionManager: connectionManager, pidStore: .shared))
+    }
+    
+    private var tileIdentities: [TileIdentity] {
+        viewModel.tiles.map { TileIdentity(id: $0.id, name: $0.pid.name) }
     }
 
     var body: some View {
@@ -53,16 +53,11 @@ struct GaugeListView: View {
                         }
                         .contentShape(Rectangle())
                     }
-                    .visibilityTrack(id: tile.id)
                 }
             }
         }
         .navigationTitle("Live Gauges")
-        .onVisibleIDsChange { ids in
-            visibleIDs = ids
-            updateInterest()
-        }
-        .onChange(of: viewModel.tiles) {
+        .onChange(of: tileIdentities) {
             updateInterest()
         }
         .onAppear {
@@ -70,23 +65,13 @@ struct GaugeListView: View {
         }
         .onDisappear {
             PIDInterestRegistry.shared.clear(token: interestToken)
-            visibleIDs.removeAll()
-            lastRegistered.removeAll()
         }
     }
 
     private func updateInterest() {
-        let newVisible: [GaugesViewModel.Tile] = viewModel.tiles.filter { visibleIDs.contains($0.id) }
-        let visibleCommands: Set<OBDCommand> = Set(newVisible.map { $0.pid.pid })
-
-        if visibleCommands.isEmpty {
-            // Avoid replacing with empty to prevent transient drops when visibility is momentarily unknown.
-            // Do nothing; keep lastRegistered alive until we truly disappear.
-            return
-        }
-
-        lastRegistered = visibleCommands
-        PIDInterestRegistry.shared.replace(pids: visibleCommands, for: interestToken)
+        // Register interest for all gauge tiles currently in the list
+        let commands: Set<OBDCommand> = Set(viewModel.tiles.map { $0.pid.pid })
+        PIDInterestRegistry.shared.replace(pids: commands, for: interestToken)
     }
 
     private func currentValueText(for: GaugesViewModel.Tile) -> String {
@@ -103,48 +88,6 @@ struct GaugeListView: View {
         } else {
             return .secondary
         }
-    }
-}
-
-// Reuse the same visibility helpers from GaugesView
-
-private struct VisibleIDPreferenceKey: PreferenceKey {
-    static var defaultValue: Set<UUID> = []
-    static func reduce(value: inout Set<UUID>, nextValue: () -> Set<UUID>) {
-        value.formUnion(nextValue())
-    }
-}
-
-private struct VisibilityTrackModifier: ViewModifier {
-    let id: UUID
-    func body(content: Content) -> some View {
-        content
-            .background(
-                GeometryReader { proxy in
-                    let frame = proxy.frame(in: .global)
-                    Color.clear
-                        .preference(key: VisibleIDPreferenceKey.self, value: frame.isOnScreen ? [id] : [])
-                }
-            )
-    }
-}
-
-private extension View {
-    func visibilityTrack(id: UUID) -> some View {
-        modifier(VisibilityTrackModifier(id: id))
-    }
-
-    func onVisibleIDsChange(_ action: @escaping (Set<UUID>) -> Void) -> some View {
-        onPreferenceChange(VisibleIDPreferenceKey.self, perform: action)
-    }
-}
-
-private extension CGRect {
-    var isOnScreen: Bool {
-        guard let screen = UIApplication.shared.connectedScenes
-            .compactMap({ ($0 as? UIWindowScene)?.keyWindow })
-            .first?.bounds else { return false }
-        return self.intersects(screen)
     }
 }
 

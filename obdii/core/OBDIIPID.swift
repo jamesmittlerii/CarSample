@@ -446,6 +446,19 @@ struct OBDPIDLibrary {
         ),
         OBDPID(
             enabled: true,
+            label: "DTCs",
+            name: "DTCs",
+            pid: .mode3(.GET_DTC),
+            //formula: "A – 40",
+            units: "NA",
+            typicalRange: .init(min: 0, max: 100),
+            //warningRange: .init(min: 80, max: 100),
+            //dangerRange: .init(min: 100, max: 150),
+            notes: "Returns DTCs",
+            kind: .status
+        ),
+        OBDPID(
+            enabled: true,
             label: "IAT",
             name: "Intake Air Temperature",
             pid: .mode1(.intakeTemp),

@@ -18,6 +18,7 @@ import SwiftOBD2
 
 struct DiagnosticsView: View {
     @StateObject private var viewModel = DiagnosticsViewModel()
+    @State private var interestToken: UUID = PIDInterestRegistry.shared.makeToken()
 
     var body: some View {
         NavigationStack {
@@ -53,6 +54,12 @@ struct DiagnosticsView: View {
                 }
             }
             .navigationTitle("Diagnostic Codes")
+        }
+        .onAppear {
+            PIDInterestRegistry.shared.replace(pids: [.mode3(.GET_DTC)], for: interestToken)
+        }
+        .onDisappear {
+            PIDInterestRegistry.shared.clear(token: interestToken)
         }
     }
 }

@@ -126,8 +126,8 @@ class CarPlayBaseTemplateController: NSObject, @MainActor CarPlayTabControlling 
         erased
             .sink { [weak self] _ in
                 self?.refreshIfVisible {
+                    // Only refresh UI on data ticks; do not re-register interest here.
                     self?.performRefresh()
-                    self?.registerVisiblePIDs()
                 }
             }
             .store(in: &cancellables)
@@ -162,8 +162,8 @@ class CarPlayBaseTemplateController: NSObject, @MainActor CarPlayTabControlling 
         erased
             .sink { [weak self] _ in
                 self?.refreshIfVisible {
+                    // Only refresh UI on data ticks; do not re-register interest here.
                     self?.performRefresh()
-                    self?.registerVisiblePIDs()
                 }
             }
             .store(in: &cancellables)
@@ -176,4 +176,3 @@ class CarPlayBaseTemplateController: NSObject, @MainActor CarPlayTabControlling 
     }
    
 }
-

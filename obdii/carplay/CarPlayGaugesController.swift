@@ -28,6 +28,9 @@ class CarPlayGaugesController: CarPlayBaseTemplateController {
     
     // Detail screen controller (manages template and live updates)
     private var detailController: CarPlayGaugeDetailController?
+
+    // Cache of last tile identity to avoid re-registering interest on measurement changes
+    private var lastTileIDs: Set<UUID> = []
     
     init(connectionManager: OBDConnectionManager) {
         self.connectionManager = connectionManager
@@ -36,12 +39,12 @@ class CarPlayGaugesController: CarPlayBaseTemplateController {
 
     override func setInterfaceController(_ interfaceController: CPInterfaceController) {
         super.setInterfaceController(interfaceController)
-        // Subscribe with throttling; base class will call performRefresh and registerVisiblePIDs when visible
+        // Subscribe with throttling; base class will call performRefresh.
         subscribeAndRefresh(viewModel.$tiles, throttleSeconds: 1.0)
     }
-
+   
     override func registerVisiblePIDs() {
-        // In this CarPlay design, all tiles appear in a single CPListImageRowItem row; treat them all as visible.
+        // Register interest for the corresponding commands
         let visiblePIDs: Set<OBDCommand> = Set(viewModel.tiles.map { $0.pid.pid })
         PIDInterestRegistry.shared.replace(pids: visiblePIDs, for: controllerToken)
     }
@@ -102,7 +105,7 @@ class CarPlayGaugesController: CarPlayBaseTemplateController {
             let tappedPID = tiles[index].pid
 
             // Before pushing detail, clear root interest and rely on detail controller to own interest for single PID
-            //PIDInterestRegistry.shared.clear(token: self.controllerToken)
+            PIDInterestRegistry.shared.clear(token: self.controllerToken)
 
             self.presentSensorTemplate(for: tappedPID)
             completion()
@@ -122,14 +125,16 @@ class CarPlayGaugesController: CarPlayBaseTemplateController {
         // Push its template
         interfaceController?.pushTemplate(controller.template, animated: false, completion: { [weak self] success, error in
             // no-op
-            // When user pops detail, CarPlay will show our root again; didBecomeVisible will re-register visible set.
-            // Optionally, you could log:
-            // if !success, let error { print("Failed to push template: \(error)") }
-            _ = self // keep self captured if needed later
+            _ = self
         })
     }
 
     override func performRefresh() {
+        // Update the UI for any tiles change
         refreshSection()
+        // Also (re)register interest for whatever tiles are currently visible.
+        // This ensures newly added gauges start streaming immediately while the tab is visible.
+        registerVisiblePIDs()
     }
 }
+
